@@ -1,0 +1,50 @@
+# === Build System Requirements ====================================================================
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+# === Package Metadata =============================================================================
+
+[project]
+name = "loretex"
+version = "0.1.0"
+description = "Converter between Markdown notes and LaTeX files."
+authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"}]
+license = {text = "GPL-3.0-or-later"}
+readme = {file = "README.md", content-type = "text/markdown"}
+keywords = ["markdown", "latex", "converter"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha"
+]
+urls = {homepage = "https://github.com/esther-poniatowski/loretex"}
+
+
+# === Dependencies =================================================================================
+
+requires-python = ">=3.12"
+
+dependencies = [
+    "pyyaml",            # for configuration parsing
+    "markdown-it-py",    # for parsing Markdown to structured data
+    "attrs",             # for structured representation of configuration or document elements
+    "typer",             # for CLI interface
+    "rich",              # for improved CLI output formatting
+]
+
+
+# === Package Source Code ==========================================================================
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["loretex"]
+license-files = ["LICENSE"]
+
+# === CLI Entry Points =============================================================================
+
+[project.scripts]
+loretex = loretex.cli:app

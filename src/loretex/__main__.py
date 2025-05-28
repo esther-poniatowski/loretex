@@ -23,5 +23,4 @@ loretex.cli: Command-line interface module for the loretex package.
 """
 from loretex.cli import app
 
-if __name__ == "__main__":
-    app()
+app()
