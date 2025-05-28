@@ -1,0 +1,48 @@
+# ==================================================================================================
+# Conda Recipe for loretex - Development Version
+#
+# Minimal recipe intended for local builds during development.
+#
+# It installs the package directly from the project source directory and avoids any dependency on
+# versioning, packaging metadata, or remote repositories.
+#
+# Usage
+# -----
+# To build the package from the project root directory, run:
+#
+# ```sh
+# conda build conda.recipe.dev/
+# ```
+#
+# Notes
+# -----
+# - The source path is relative to the recipe directory.
+# - The CLI is tested with a minimal smoke test (`loretex --help`).
+# - Version must be updated manually if changed in `pyproject.toml`.
+# ==================================================================================================
+package:
+  name: loretex
+  version: "0.1.0"
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: python -m pip install . --no-deps --ignore-installed -vv
+
+requirements:
+  host:
+    - python >=3.12
+    - pip
+  run:
+    - python >=3.12
+    - pyyaml
+    - markdown-it-py
+    - attrs
+    - typer
+    - rich
+
+test:
+  commands:
+    - loretex --help
