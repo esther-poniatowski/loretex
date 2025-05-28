@@ -47,4 +47,4 @@ license-files = ["LICENSE"]
 # === CLI Entry Points =============================================================================
 
 [project.scripts]
-loretex = loretex.cli:app
+loretex = "loretex.cli:app"
