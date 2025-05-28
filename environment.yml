@@ -1,0 +1,30 @@
+# --------------------------------------------------------------------------------------------------
+# Conda Environment Specification for Markdown-to-LaTeX Conversion Package
+#
+# To create the environment, run:
+# ```sh
+# conda env create -f environment.yml
+# ```
+#
+# To activate the environment, run:
+# ```sh
+# conda activate loretex
+# ```
+#
+# Notes:
+#
+# - Alternative markdown parser: `mistune`.
+# --------------------------------------------------------------------------------------------------
+name: loretex
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.12
+  - pyyaml         # for parsing YAML specification file
+  - markdown-it-py # for parsing Markdown to structured data
+  - attrs          # for structured representation of configuration or document elements
+  - typer          # for command-line interface
+  - rich           # for improved CLI output formatting
+
+  - pip
