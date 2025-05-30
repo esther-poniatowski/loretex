@@ -27,8 +27,7 @@ import typer
 
 from loretex.utils.io import load_yaml_spec, ensure_output_dir
 from loretex.parsers.markdown_converter import convert_markdown_to_latex
-from loretex.params import SpecParams
-
+from loretex.config.params import SpecParams
 
 app = typer.Typer(add_completion=False)
 
