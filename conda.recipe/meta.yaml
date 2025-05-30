@@ -1,0 +1,62 @@
+# ==================================================================================================
+# Conda Recipe for Loretex Package
+#
+# `conda.recipe/meta.yaml`
+#
+# Defines the build recipe using metadata extracted from the `pyproject.toml` file.
+#
+# Notes
+# -----
+# The recipe uses dynamically extracts from `pyproject.toml`:
+#
+# - name
+# - version
+# - description
+# - license
+# - license_file from the license-files field
+# - runtime dependencies
+# - url (homepage) from
+#
+# The build script uses `pip` to install the package in build time, which invokes the build backends
+# specified in `pyproject.toml` (here, `setuptools`).
+
+# Warning
+# -------
+# Assumes that all dependencies are compatible with Conda (no extras).
+# ==================================================================================================
+
+{% set recipe_dir = environ.get('RECIPE_DIR', '.') %}
+{% set pyproject = load_file_data('pyproject.toml') %}
+
+package:
+  name: {{ pyproject.project.name | lower }}
+  version: {{ pyproject.project.version }}
+
+source:
+  path: {{ RECIPE_DIR }}/..
+
+build:
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
+  noarch: python
+
+requirements:
+  host:
+    - python {{ pyproject.project["requires-python"] }}
+    - pip
+    - setuptools >=61
+    - wheel
+  run:
+    - python {{ pyproject.project["requires-python"] }}
+    {% for dep in pyproject.project["dependencies"] %}
+    - {{ dep }}
+    {% endfor %}
+
+about:
+  summary: {{ pyproject.project.description }}
+  license: {{ pyproject.project.license }}
+  license_file: {{ pyproject.project["license-files"][0] }}
+  home: {{ pyproject.project.urls.homepage }}
+
+extra:
+  recipe-maintainers:
+    - esther-poniatowski
