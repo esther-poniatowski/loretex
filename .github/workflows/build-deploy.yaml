@@ -1,0 +1,126 @@
+# ==================================================================================================
+# GitHub Actions Workflow File for the Loretex Package
+#
+# File: `.github/workflows/build.yml`
+#
+# This workflow automates the build and deployment of the package to a private static Conda channel
+# hosted on GitHub Pages.
+#
+# Environment Variables
+# ---------------------
+# - CHANNEL_REPO    : Name of the GitHub repository used to host the Conda channel.
+#                     Current value: `eresthina-conda-channel`.
+# - CHANNEL_DIR     : Path to the cloned Conda channel repository.
+#                     Current value: `../eresthina-conda-channel`.
+# - BUILD_DIR       : Output directory for built packages within the package repository.
+#                     Current value: `build`.
+#
+# Secrets
+# -------
+# - CHANNEL_TOKEN   : GitHub Personal Access Token to the channel, with `repo` scope.
+# - CHANNEL_USERNAME: Username associated with the token.
+#
+# Notes
+# -----
+# Trigger: On every push to the `main` branch.
+#
+# Key Steps:
+#
+# 1. Setup:
+#    - Checkout the package repository.
+#    - Create a Conda build environment.
+#    - Install `conda-build`.
+#
+# 2. Build:
+#    - Build the package for multiple platforms (`linux-64`, `osx-64`, `win-64`).
+#    - Store artifacts in the specified local build directory.
+#
+# 3. Deploy:
+#    - Clone the remote Conda channel repository.
+#    - Copy built artifacts into platform-specific subdirectories.
+#    - Index the channel to update metadata.
+#
+# 4. Publish:
+#    - Commit and push the updated channel repository to GitHub.
+#
+# See Also
+# --------
+# - Conda Build: https://docs.conda.io/projects/conda-build
+# - Checkout Action: https://github.com/actions/checkout
+# - Setup Miniconda Action: https://github.com/conda-incubator/setup-miniconda
+# ==================================================================================================
+
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux-64
+          - os: macos-latest
+            platform: osx-64
+          - os: windows-latest
+            platform: win-64
+    env:
+      CHANNEL_REPO: eresthina-conda-channel
+      CHANNEL_DIR: ../eresthina-conda-channel
+      BUILD_DIR: build
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Package Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          channels: conda-forge,defaults
+          channel-priority: "strict"
+          miniconda-version: latest
+          activate-environment: build
+          python-version: 3.12
+          miniforge-variant: Mambaforge
+          use-mamba: true
+
+      - name: Install Conda Tools
+        run: conda install -y conda-build
+
+      - name: Build Package
+        run: conda build conda.recipe --output-folder ${{ env.BUILD_DIR }}
+
+      - name: Clone Channel Repository
+        run: git clone "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git" ${{ env.CHANNEL_DIR }}
+
+      - name: Ensure Platform Directory Exists
+        run: |
+          python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/${{ matrix.platform }}', exist_ok=True)"
+
+      - name: Deploy Built Packages
+        run: cp -r ${{ env.BUILD_DIR }}/${{ matrix.platform }}/* ${{ env.CHANNEL_DIR }}/${{ matrix.platform }}/
+
+      - name: Index Channel Repository
+        run: python -m conda_index ${{ env.CHANNEL_DIR }}
+
+      - name: Configure Git Identity
+        run: |
+          cd ${{ env.CHANNEL_DIR }}
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Push to Channel Repository
+        run: |
+          cd ${{ env.CHANNEL_DIR }}
+          git add .
+          git commit -m "Release ${{ github.ref_name }} for ${{ matrix.platform }}" || true
+          git push "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git"
