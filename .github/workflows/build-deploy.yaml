@@ -55,6 +55,7 @@ on:
   push:
     branches:
       - main
+    workflow_dispatch:
 
 jobs:
   build:
@@ -107,7 +108,12 @@ jobs:
           python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/${{ matrix.platform }}', exist_ok=True)"
 
       - name: Deploy Built Packages
-        run: cp -r ${{ env.BUILD_DIR }}/${{ matrix.platform }}/* ${{ env.CHANNEL_DIR }}/${{ matrix.platform }}/
+        run:  |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            xcopy /E /I "${{ env.BUILD_DIR }}\\${{ matrix.platform }}\\*" "${{ env.CHANNEL_DIR }}\\${{ matrix.platform }}\\"
+          else
+            cp -r ${{ env.BUILD_DIR }}/${{ matrix.platform }}/* ${{ env.CHANNEL_DIR }}/${{ matrix.platform }}/
+          fi
 
       - name: Index Channel Repository
         run: python -m conda_index ${{ env.CHANNEL_DIR }}
