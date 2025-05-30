@@ -85,15 +85,13 @@ jobs:
       - name: Setup Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
+          miniforge-variant: Miniforge3
           auto-update-conda: true
           channels: conda-forge,defaults
           channel-priority: "strict"
           miniconda-version: latest
-          miniconda-variant: Miniforge3
-          architecture: x64
           activate-environment: build
           python-version: 3.12
-          miniforge-variant: Mambaforge
           use-mamba: true
 
       - name: Install Conda Tools
