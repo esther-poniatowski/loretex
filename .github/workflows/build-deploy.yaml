@@ -89,6 +89,8 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: "strict"
           miniconda-version: latest
+          miniconda-variant: Miniforge3
+          architecture: x64
           activate-environment: build
           python-version: 3.12
           miniforge-variant: Mambaforge
