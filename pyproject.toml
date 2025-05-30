@@ -12,12 +12,12 @@ name = "loretex"
 version = "0.1.0"
 description = "Converter between Markdown notes and LaTeX files."
 authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"}]
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 readme = {file = "README.md", content-type = "text/markdown"}
 keywords = ["markdown", "latex", "converter"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License (GPL)",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha"
 ]
@@ -41,8 +41,9 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["loretex"]
-license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 # === CLI Entry Points =============================================================================
 
