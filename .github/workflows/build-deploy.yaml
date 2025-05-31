@@ -83,7 +83,7 @@ jobs:
           use-mamba: true
 
       - name: Install Conda Tools
-        run: conda install -y conda-build
+        run: conda install -y conda-build conda-index
 
       - name: Build Package
         run: conda build conda.recipe --output-folder ${{ env.BUILD_DIR }}
