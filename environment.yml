@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------------------------------------
-# Conda Environment Specification for Markdown-to-LaTeX Conversion Package
+# Conda Environment Specification for Loretex Package
 #
 # To create the environment, run:
 # ```sh
@@ -28,3 +28,5 @@ dependencies:
   - rich           # for improved CLI output formatting
 
   - pip
+  - conda-build
+  - conda-index
