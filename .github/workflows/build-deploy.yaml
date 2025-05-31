@@ -24,6 +24,8 @@
 # -----
 # Trigger: On every push to the `main` branch.
 #
+# Platform: `noarch` (pure python, no architecture-specific dependencies).
+#
 # Key Steps:
 #
 # 1. Setup:
@@ -32,12 +34,12 @@
 #    - Install `conda-build`.
 #
 # 2. Build:
-#    - Build the package for multiple platforms (`linux-64`, `osx-64`, `win-64`).
+#    - Build the package (`noarch` platform).
 #    - Store artifacts in the specified local build directory.
 #
 # 3. Deploy:
 #    - Clone the remote Conda channel repository.
-#    - Copy built artifacts into platform-specific subdirectories.
+#    - Copy built artifacts into platform-independent subdirectory.
 #    - Index the channel to update metadata.
 #
 # 4. Publish:
@@ -59,17 +61,8 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            platform: linux-64
-          - os: macos-latest
-            platform: osx-64
-          - os: windows-latest
-            platform: win-64
+    runs-on: ubuntu-latest
+
     env:
       CHANNEL_REPO: eresthina-conda-channel
       CHANNEL_DIR: ../eresthina-conda-channel
@@ -86,12 +79,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
-          auto-update-conda: true
-          channels: conda-forge,defaults
-          channel-priority: "strict"
-          miniconda-version: latest
           activate-environment: build
-          python-version: 3.12
           use-mamba: true
 
       - name: Install Conda Tools
@@ -105,15 +93,11 @@ jobs:
 
       - name: Ensure Platform Directory Exists
         run: |
-          python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/${{ matrix.platform }}', exist_ok=True)"
+          python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/noarch', exist_ok=True)"
 
       - name: Deploy Built Packages
         run:  |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            xcopy /E /I "${{ env.BUILD_DIR }}\\${{ matrix.platform }}\\*" "${{ env.CHANNEL_DIR }}\\${{ matrix.platform }}\\"
-          else
-            cp -r ${{ env.BUILD_DIR }}/${{ matrix.platform }}/* ${{ env.CHANNEL_DIR }}/${{ matrix.platform }}/
-          fi
+          cp -r ${{ env.BUILD_DIR }}/noarch/* ${{ env.CHANNEL_DIR }}/noarch/
 
       - name: Index Channel Repository
         run: python -m conda_index ${{ env.CHANNEL_DIR }}
@@ -128,5 +112,5 @@ jobs:
         run: |
           cd ${{ env.CHANNEL_DIR }}
           git add .
-          git commit -m "Release ${{ github.ref_name }} for ${{ matrix.platform }}" || true
+          git commit -m "Release ${{ github.ref_name }} for noarch" || true
           git push "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git"
