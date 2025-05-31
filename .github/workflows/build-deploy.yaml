@@ -9,9 +9,9 @@
 # Environment Variables
 # ---------------------
 # - CHANNEL_REPO    : Name of the GitHub repository used to host the Conda channel.
-#                     Current value: `eresthina-conda-channel`.
+#                     Current value: `eresthanaconda`.
 # - CHANNEL_DIR     : Path to the cloned Conda channel repository.
-#                     Current value: `../eresthina-conda-channel`.
+#                     Current value: `../eresthanaconda`.
 # - BUILD_DIR       : Output directory for built packages within the package repository.
 #                     Current value: `build`.
 #
@@ -64,8 +64,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CHANNEL_REPO: eresthina-conda-channel
-      CHANNEL_DIR: ../eresthina-conda-channel
+      CHANNEL_REPO: eresthanaconda
+      CHANNEL_DIR: ../eresthanaconda
       BUILD_DIR: build
 
     permissions:
@@ -92,7 +92,7 @@ jobs:
 
       - name: Ensure Platform Directory Exists
         run: |
-          python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/noarch', exist_ok=True)"
+          mkdir -p ${{ env.CHANNEL_DIR }}/noarch
 
       - name: Deploy Built Packages
         run:  |
