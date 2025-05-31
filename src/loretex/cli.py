@@ -33,7 +33,7 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def convert(
-    spec_path: Path = typer.Argument(..., help="Path to the YAML specification file.")
+    spec_path: Path = typer.Option(..., "--spec", "-s", help="Path to the YAML specification file.")
 ) -> None:
     """
     Convert Markdown notes to LaTeX files according to the specification and write LaTeX files to
