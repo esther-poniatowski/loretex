@@ -36,7 +36,7 @@ source:
   path: {{ RECIPE_DIR }}/..
 
 build:
-  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
+  script: python -m pip install . --no-deps --ignore-installed --no-build-isolation -vv
   noarch: python
 
 requirements:
