@@ -11,9 +11,9 @@
 # Environment Variables
 # ---------------------
 # - CHANNEL_REPO    : Name of the GitHub repository used to host the Conda channel.
-#                     Current value: `eresthina-conda-channel`.
+#                     Current value: `eresthanaconda`.
 # - CHANNEL_DIR     : Path to the cloned Conda channel repository.
-#                     Current value: `../eresthina-conda-channel`.
+#                     Current value: `../eresthanaconda`.
 # - BUILD_DIR       : Output directory for built packages within the package repository.
 #                     Current value: `build`.
 #
@@ -73,8 +73,8 @@ jobs:
           - os: windows-latest
             platform: win-64
     env:
-      CHANNEL_REPO: eresthina-conda-channel
-      CHANNEL_DIR: ../eresthina-conda-channel
+      CHANNEL_REPO: eresthanaconda
+      CHANNEL_DIR: ../eresthanaconda
       BUILD_DIR: build
 
     permissions:
@@ -88,12 +88,6 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
-          auto-update-conda: true
-          channels: conda-forge,defaults
-          channel-priority: "strict"
-          miniconda-version: latest
-          activate-environment: build
-          python-version: 3.12
           use-mamba: true
 
       - name: Install Conda Tools
@@ -106,19 +100,18 @@ jobs:
         run: git clone "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git" ${{ env.CHANNEL_DIR }}
 
       - name: Ensure Platform Directory Exists
-        run: |
-          python -c "import os; os.makedirs('${{ env.CHANNEL_DIR }}/${{ matrix.platform }}', exist_ok=True)"
+        run: New-Item -ItemType Directory -Path "${{ env.CHANNEL_DIR }}/noarch" -Force
+        shell: pwsh
 
       - name: Deploy Built Packages
         run:  |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            xcopy /E /I "${{ env.BUILD_DIR }}\\${{ matrix.platform }}\\*" "${{ env.CHANNEL_DIR }}\\${{ matrix.platform }}\\"
-          else
-            cp -r ${{ env.BUILD_DIR }}/${{ matrix.platform }}/* ${{ env.CHANNEL_DIR }}/${{ matrix.platform }}/
-          fi
+          $source = "${{ env.BUILD_DIR }}/${{ matrix.platform }}"
+          $dest = "${{ env.CHANNEL_DIR }}/${{ matrix.platform }}"
+          Copy-Item -Path "$source/*" -Destination $dest -Recurse -Force
+        shell: pwsh
 
       - name: Index Channel Repository
-        run: python -m conda_index ${{ env.CHANNEL_DIR }}
+        run: conda run python -m conda_index ${{ env.CHANNEL_DIR }}
 
       - name: Configure Git Identity
         run: |
@@ -130,5 +123,5 @@ jobs:
         run: |
           cd ${{ env.CHANNEL_DIR }}
           git add .
-          git commit -m "Release ${{ github.ref_name }} for ${{ matrix.platform }}" || true
+          git commit -m "chore(conda): Publish ${{ github.repository }} for ${{ matrix.platform }}" || true
           git push "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git"

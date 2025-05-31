@@ -1,7 +1,7 @@
 # ==================================================================================================
 # GitHub Actions Workflow File for the Loretex Package
 #
-# File: `.github/workflows/build.yml`
+# File: `.github/workflows/build-deploy.yml`
 #
 # This workflow automates the build and deployment of the package to a private static Conda channel
 # hosted on GitHub Pages.
@@ -111,5 +111,5 @@ jobs:
         run: |
           cd ${{ env.CHANNEL_DIR }}
           git add .
-          git commit -m "Release ${{ github.ref_name }} for noarch" || true
+          git commit -m "chore(conda): Publish ${{ github.repository }} for noarch" || true
           git push "https://x-access-token:${{ secrets.CHANNEL_TOKEN }}@github.com/${{ secrets.CHANNEL_USERNAME }}/${{ env.CHANNEL_REPO }}.git"
