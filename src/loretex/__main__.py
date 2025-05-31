@@ -1,4 +1,6 @@
 """
+Package: `loretex` (`__main__.py`)
+
 Command-line entry point for the loretex package.
 
 This entry point loads a YAML specification file and performs Markdown-to-LaTeX conversion for all

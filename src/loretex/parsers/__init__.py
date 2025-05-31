@@ -1,4 +1,6 @@
 """
+Module: `loretex.parsers`
+
 Parsing and transformation logic for Markdown-to-LaTeX conversion in the loretex package.
 
 This module implements the structured transformation of Markdown elements into LaTeX code. Parsing

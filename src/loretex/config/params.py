@@ -1,4 +1,6 @@
 """
+Module= `loretex.config.params`
+
 Structured representations of specification parameters for the loretex package.
 
 This module defines immutable data classes for storing and validating the parameters used in the

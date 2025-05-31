@@ -1,4 +1,6 @@
 """
+Module: `loretex.cli`
+
 Defines the command-line interface for the loretex package.
 
 This module declares command-line commands and associated logic using the `typer` library. The main

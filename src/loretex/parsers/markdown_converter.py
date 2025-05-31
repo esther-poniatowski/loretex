@@ -1,8 +1,10 @@
 """
+Module: `loretex.parsers.markdown_converter`
+
 Markdown-to-LaTeX transformation logic.
 
-Implements the core function `convert_markdown_to_latex` for converting Markdown strings into
-LaTeX-formatted output. The conversion is modular and structured for extensibility.
+This module implements the core function `convert_markdown_to_latex` for converting Markdown strings
+into LaTeX-formatted output. The conversion is modular and structured for extensibility.
 
 Functions
 ---------

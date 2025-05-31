@@ -1,4 +1,6 @@
 """
+Module: `loretex.utils`
+
 Utility functions for the loretex package.
 
 This module contains helper functions designed to be stateless and reusable across the conversion

@@ -1,5 +1,5 @@
 """
-loretex
+Package: `loretex` (`__init__.py`)
 
 Utility package for converting Markdown notes to LaTeX documents.
 

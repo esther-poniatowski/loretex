@@ -1,4 +1,6 @@
 """
+Module: `loretex.config`
+
 Configuration and data model definitions for the loretex package.
 
 This module provides structured representations of specification parameters, including conversion

@@ -1,5 +1,5 @@
 """
-test_loretex
+Package: `test_loretex` (`__init__.py`)
 
 Tests for the loretex package.
 
