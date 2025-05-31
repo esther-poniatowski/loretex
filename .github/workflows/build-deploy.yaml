@@ -79,7 +79,6 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
-          activate-environment: build
           use-mamba: true
 
       - name: Install Conda Tools
@@ -100,7 +99,7 @@ jobs:
           cp -r ${{ env.BUILD_DIR }}/noarch/* ${{ env.CHANNEL_DIR }}/noarch/
 
       - name: Index Channel Repository
-        run: python -m conda_index ${{ env.CHANNEL_DIR }}
+        run: conda run python -m conda_index ${{ env.CHANNEL_DIR }}
 
       - name: Configure Git Identity
         run: |
