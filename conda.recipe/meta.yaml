@@ -1,28 +1,41 @@
 # ==================================================================================================
 # Conda Recipe for Loretex Package
 #
-# `conda.recipe/meta.yaml`
+# File: `conda.recipe/meta.yaml`
 #
-# Defines the build recipe using metadata extracted from the `pyproject.toml` file.
+# Build recipe for conda packaging using metadata extracted from the `pyproject.toml` file.
 #
 # Notes
 # -----
-# The recipe uses dynamically extracts from `pyproject.toml`:
+# Metadata is dynamically extracted from the `pyproject.toml` file to ensure consistency with the
+# primary project configuration.
 #
-# - name
-# - version
-# - description
-# - license
-# - license_file from the license-files field
-# - runtime dependencies
-# - url (homepage) from
+# Synchronized fields:
 #
-# The build script uses `pip` to install the package in build time, which invokes the build backends
-# specified in `pyproject.toml` (here, `setuptools`).
-
+# - `name`
+# - `version`
+# - `description`
+# - `license`
+# - `license_file`      (from `license-files`)
+# - `requirements: run` (runtime dependencies, from `dependencies`)
+# - `url`               ("homepage" URL)
+#
+# The build script uses `pip` to install the package, relying on the build backends specified in
+# `pyproject.toml` (in this case, `setuptools`).
+#
 # Warning
 # -------
-# Assumes that all dependencies are compatible with Conda (no extras).
+# This recipe assumes that all declared dependencies are available on Conda (typically via
+# `conda-forge`, `defaults` or private channels), and that no optional extras are required.
+#
+# Variables
+# ---------
+# - `recipe_dir`: Directory containing this recipe file, used to locate the `pyproject.toml`.
+# - `pyproject`: Loaded metadata from `pyproject.toml` using Jinja2 templating.
+#
+# See Also
+# --------
+# `Jinja2`: Templating engine used to inject metadata from `pyproject.toml`.
 # ==================================================================================================
 
 {% set recipe_dir = environ.get('RECIPE_DIR', '.') %}
