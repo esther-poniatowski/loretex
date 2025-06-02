@@ -1,20 +1,24 @@
-# === Build System Requirements ====================================================================
+# ==================================================================================================
+# Pyproject Configuration for Loretex Package
+# ==================================================================================================
+
+# --- Build System Requirements --------------------------------------------------------------------
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
-# === Package Metadata =============================================================================
+# --- Package Metadata -----------------------------------------------------------------------------
 
 [project]
 name = "loretex"
 version = "0.1.0"
-description = "Converter between Markdown notes and LaTeX files."
 authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"}]
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = {file = "README.md", content-type = "text/markdown"}
+description = "Converter between Markdown notes and LaTeX files"
 keywords = ["markdown", "latex", "converter"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,20 +28,20 @@ classifiers = [
 urls = {homepage = "https://github.com/esther-poniatowski/loretex"}
 
 
-# === Dependencies =================================================================================
+# --- Dependencies ---------------------------------------------------------------------------------
 
 requires-python = ">=3.12"
 
 dependencies = [
-    "pyyaml",            # for configuration parsing
-    "markdown-it-py",    # for parsing Markdown to structured data
-    "attrs",             # for structured representation of configuration or document elements
-    "typer",             # for CLI interface
-    "rich",              # for improved CLI output formatting
+    "pyyaml",            # YAML configuration parsing
+    "markdown-it-py",    # Markdown parsing
+    "attrs",             # Data classes and validation
+    "typer",             # CLI interface
+    "rich",              # Improved CLI output formatting
 ]
 
 
-# === Package Source Code ==========================================================================
+# --- Package Source Code --------------------------------------------------------------------------
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -45,7 +49,7 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# === CLI Entry Points =============================================================================
+# --- CLI Entry Points -----------------------------------------------------------------------------
 
 [project.scripts]
 loretex = "loretex.cli:app"
