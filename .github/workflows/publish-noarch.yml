@@ -1,7 +1,7 @@
 # ==================================================================================================
 # GitHub Actions Workflow File for the Loretex Package
 #
-# File: `.github/workflows/build-deploy.yml`
+# File: `.github/workflows/publish-noarch.yml`
 #
 # This workflow automates the build and deployment of the package to a private static Conda channel
 # hosted on GitHub Pages.
