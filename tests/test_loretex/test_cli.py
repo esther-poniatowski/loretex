@@ -10,7 +10,6 @@ loretex.cli:
 typer.testing.CliRunner:
     Utility for testing command-line interfaces built with Typer.
 """
-import pytest
 from typer.testing import CliRunner
 
 from loretex.cli import app
@@ -37,3 +36,27 @@ def test_cli_runs_on_spec(tmp_path):
     spec_file.write_text("output_dir: ./out\nanchor_level: 1\nchapters: []")
     result = runner.invoke(app, ["convert", "--spec", str(spec_file)])
     assert result.exit_code == 0
+
+
+def test_cli_convert_file_stdout(tmp_path):
+    """
+    Test that the CLI can convert a single file and write to stdout.
+    """
+    input_file = tmp_path / "input.md"
+    input_file.write_text("# Hello\n\nWorld", encoding="utf-8")
+    result = runner.invoke(app, ["convert-file", str(input_file)])
+    assert result.exit_code == 0
+    assert r"\section{Hello}" in result.stdout
+    assert "World" in result.stdout
+
+
+def test_cli_convert_file_output(tmp_path):
+    """
+    Test that the CLI can convert a single file and write to a file.
+    """
+    input_file = tmp_path / "input.md"
+    output_file = tmp_path / "output.tex"
+    input_file.write_text("# Hello\n\nWorld", encoding="utf-8")
+    result = runner.invoke(app, ["convert-file", str(input_file), "--out", str(output_file)])
+    assert result.exit_code == 0
+    assert output_file.read_text(encoding="utf-8").startswith(r"\section{Hello}")
