@@ -1,16 +1,18 @@
-output_dir: ./out
 anchor_level: 1
-template: ./template.tex
-main_output: ./out/main.tex
 title: Complex Loretex Test
 author: Loretex CI
 date: "2026-02-03"
 bibliography: "\\bibliography{refs}"
+callout_title_font: "\\sffamily\\bfseries"
+callout_body_font: "\\sffamily"
+document_font: "\\renewcommand{\\familydefault}{\\sfdefault}"
 conversion:
   parsing:
     strip_yaml_front_matter: true
   math:
     block_style: brackets
+  labels:
+    auto_label_headings: true
   inline:
     inline_math_template: "${content}$"
     custom_markers:
@@ -23,10 +25,7 @@ conversion:
       \begin{{center}}
       {include_command}[width={width}{unit}]{{{path_prefix}/{source}{path_suffix}}}
       \end{{center}}
-  callouts:
-    environment_map:
-      note: quote
-      warning: quote
+  callouts: {}
   tables:
     include_hlines: false
 chapters:

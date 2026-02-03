@@ -319,6 +319,7 @@ latex = converter.convert_string("# Title")
 - [API Documentation](docs/architecture.md) (coming soon for hosted docs)
 - [Usage Examples](docs/usage-examples.md)
 - [Architecture](docs/architecture.md)
+- [Development Notes](docs/development.md)
 - [Release Checklist](docs/release-checklist.md)
 
 > [!NOTE]
