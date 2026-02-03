@@ -55,36 +55,36 @@ It provides the following benefits:
 
 ## Features
 
-- [ ] **Modular document structure**: Generate standalone `.tex` files from individual or aggregated
+- [x] **Modular document structure**: Generate standalone `.tex` files from individual or aggregated
   Markdown notes, producing composable fragments for integration into a `main.tex` master file.
 
-- [ ] **Declarative configurations**: Specify document structure, input and output paths, and
+- [x] **Declarative configurations**: Specify document structure, input and output paths, and
   optional conversion parameters in a static configuration file.
 
-- [ ] **Fine-grained hierarchy mapping**: Map Markdown headings (`#`, `##`, etc) into LaTeX sections
+- [x] **Fine-grained hierarchy mapping**: Map Markdown headings (`#`, `##`, etc) into LaTeX sections
   (`\section{}`, `\subsection{}`, etc) using flexible, note-specific anchoring logic.
 
 - **Formatting transformation**: Convert Markdown formatting into LaTeX equivalents, including:
 
-  - [ ] Emphasis (bold, italics, underlined, strike-through)
-  - [ ] Code blocks and inline verbatim
-  - [ ] Custom inline markers (e.g., `==TODO: ...==`)
-  - [ ] Horizontal rules
-  - [ ] Lists and tables
-  - [ ] Mathematical expressions (`$...$`, `$$...$$`)
-  - [ ] Citations (`[@authorYYYY]`)
+  - [x] Emphasis (bold, italics)
+  - [x] Code blocks and inline verbatim
+  - [x] Custom inline markers (e.g., `==TODO: ...==`)
+  - [x] Horizontal rules
+  - [x] Lists and tables
+  - [x] Mathematical expressions (`$...$`, `$$...$$`)
+  - [x] Citations (`[@authorYYYY]`)
 
 - **Link and media resolution**:
 
-  - [ ] Markdown internal links to LaTeX cross-references (`\ref{}`)
-  - [ ] Markdown external links into LaTeX URLs (`\url{}`)
-  - [ ] Embedded images to graphical elements (`\includegraphics{}`)
+  - [x] Markdown internal links to LaTeX cross-references (`\ref{}`)
+  - [x] Markdown external links into LaTeX URLs (`\url{}`)
+  - [x] Embedded images to graphical elements (`\includegraphics{}`)
 
-- **Customizable admonitions and environments**: Translate Markdown callouts (e.g., > [!NOTE], > [!WARNING], etc.) into LaTeX environments with configurable styling.
+- [x] **Customizable admonitions and environments**: Translate Markdown callouts (e.g., > [!NOTE], > [!WARNING], etc.) into LaTeX environments with configurable styling.
 
-- [ ] **Selective exclusions**: Omit specific Markdown content (e.g., YAML front matter) from the conversion output.
+- [x] **Selective exclusions**: Omit specific Markdown content (e.g., YAML front matter) from the conversion output.
 
-- [ ] **Batch or partial builds**: Process full documents or selected subsets of notes for targeted compilation and debugging.
+- [x] **Batch or partial builds**: Process full documents or selected subsets of notes for targeted compilation and debugging.
 
 ---
 
@@ -92,7 +92,7 @@ It provides the following benefits:
 
 To install the package and its dependencies, use one of the following methods:
 
-### Using Pip Installs Packages
+### Using Pip
 
 Install the package from the GitHub repository URL via `pip`:
 
@@ -108,7 +108,7 @@ Install the package from the private channel eresthanaconda:
 conda install loretex -c eresthanaconda
 ```
 
-### From Source
+### From Source (Editable)
 
 1. Clone the repository:
 
@@ -121,6 +121,12 @@ conda install loretex -c eresthanaconda
       ```bash
       cd loretex
       conda env create -f environment.yml
+      ```
+
+3. Activate the environment:
+
+      ```bash
+      conda activate loretex
       ```
 
 ---
@@ -300,8 +306,8 @@ latex = converter.convert_string("# Title")
 
 ## Documentation
 
-- [User Guide](https://esther-poniatowski.github.io/loretex/guide/)
-- [API Documentation](https://esther-poniatowski.github.io/loretex/api/)
+- [User Guide](docs/usage-examples.md) (coming soon for hosted docs)
+- [API Documentation](docs/architecture.md) (coming soon for hosted docs)
 - [Usage Examples](docs/usage-examples.md)
 - [Architecture](docs/architecture.md)
 - [Release Checklist](docs/release-checklist.md)
@@ -327,7 +333,7 @@ Extension points:
 
 **Issues**: [GitHub Issues](https://github.com/esther-poniatowski/loretex/issues)
 
-**Email**: `{{ contact@example.com }}`
+**Email**: `esther.poniatowski@ens.psl.eu`
 
 ---
 
@@ -343,7 +349,7 @@ Please refer to the [contribution guidelines](CONTRIBUTING.md).
 
 **Author**: @esther-poniatowski
 
-**Contact**: `{{ contact@example.com }}`
+**Contact**: `esther.poniatowski@ens.psl.eu`
 
 For academic use, please cite using the GitHub "Cite this repository" feature to
 generate a citation in various formats.
@@ -352,8 +358,10 @@ Alternatively, refer to the [citation metadata](CITATION.cff).
 
 ### Third-Party Dependencies
 
-- **[Library A](link)** - Purpose
-- **[Library B](link)** - Purpose
+- **[PyYAML](https://pyyaml.org/)** - YAML configuration parsing.
+- **[attrs](https://www.attrs.org/)** - Lightweight data classes and validation helpers.
+- **[Typer](https://typer.tiangolo.com/)** - CLI framework.
+- **[Rich](https://rich.readthedocs.io/)** - Terminal formatting for CLI output.
 
 ---
 
