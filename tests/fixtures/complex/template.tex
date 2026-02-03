@@ -1,4 +1,9 @@
 \documentclass{article}
+\usepackage{tcolorbox}
+\input{../loretex-callouts.sty}
+{{document_font}}
+{{callout_title_font}}
+{{callout_body_font}}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{amsmath}
@@ -6,11 +11,13 @@
 \usepackage{listings}
 \usepackage{multirow}
 \usepackage{booktabs}
+\usepackage[numbers]{natbib}
 \title{{title}}
 \author{{author}}
 \date{{date}}
 \begin{document}
 \maketitle
 {{bibliography}}
+\bibliographystyle{plain}
 {{content}}
 \end{document}

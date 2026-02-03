@@ -122,6 +122,12 @@ class SpecParams:
         Document author for templates.
     date : str | None
         Document date for templates.
+    callout_title_font : str | None
+        LaTeX font command for callout titles (e.g. "\\sffamily\\bfseries").
+    callout_body_font : str | None
+        LaTeX font command for callout body text (e.g. "\\sffamily").
+    document_font : str | None
+        LaTeX command to set the default document font (e.g. "\\renewcommand{\\familydefault}{\\sfdefault}").
 
     Methods
     -------
@@ -140,6 +146,9 @@ class SpecParams:
     title: str | None
     author: str | None
     date: str | None
+    callout_title_font: str | None
+    callout_body_font: str | None
+    document_font: str | None
 
     @classmethod
     def from_spec(cls, spec: dict):
@@ -182,6 +191,9 @@ class SpecParams:
         title = spec.get("title")
         author = spec.get("author")
         date = spec.get("date")
+        callout_title_font = spec.get("callout_title_font")
+        callout_body_font = spec.get("callout_body_font")
+        document_font = spec.get("document_font")
         chapters = [
             Chapter.from_dict(ch, output_dir, anchor_level)
             for ch in spec.get("chapters", [])
@@ -198,4 +210,7 @@ class SpecParams:
             title=title,
             author=author,
             date=date,
+            callout_title_font=callout_title_font,
+            callout_body_font=callout_body_font,
+            document_font=document_font,
         )

@@ -1,0 +1,134 @@
+%% loretex-callouts.sty
+%% Obsidian-style callouts inspired by scholia.
+%%
+%% Usage:
+%% \usepackage{tcolorbox}
+%% \input{loretex-callouts.sty}
+%%
+%% Optional customization:
+%% \renewcommand{\loretexcallouttitlefont}{\sffamily\bfseries}
+%% \renewcommand{\loretexcalloutbodyfont}{\sffamily}
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{loretex-callouts}[2026/02/03 Obsidian-style callouts]
+
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% Allow icons to be located next to this file in icons/pdf/.
+\graphicspath{{./icons/pdf/}{icons/pdf/}{../icons/pdf/}{./loretex/icons/pdf/}{loretex/icons/pdf/}}
+
+\makeatletter
+
+% -----------------------------------------------------------------------------
+% Fonts (customizable)
+% -----------------------------------------------------------------------------
+\providecommand{\loretexcallouttitlefont}{\sffamily\bfseries}
+\providecommand{\loretexcalloutbodyfont}{\sffamily}
+
+% -----------------------------------------------------------------------------
+% Colors (Obsidian-inspired palette)
+% -----------------------------------------------------------------------------
+\definecolor{loretex-note}{HTML}{4A90E2}
+\definecolor{loretex-info}{HTML}{4A90E2}
+\definecolor{loretex-tip}{HTML}{27AE60}
+\definecolor{loretex-success}{HTML}{27AE60}
+\definecolor{loretex-warning}{HTML}{F2994A}
+\definecolor{loretex-caution}{HTML}{F2994A}
+\definecolor{loretex-danger}{HTML}{EB5757}
+\definecolor{loretex-error}{HTML}{EB5757}
+\definecolor{loretex-failure}{HTML}{EB5757}
+\definecolor{loretex-bug}{HTML}{9B51E0}
+\definecolor{loretex-example}{HTML}{9B51E0}
+\definecolor{loretex-question}{HTML}{2D9CDB}
+\definecolor{loretex-quote}{HTML}{6B7280}
+\definecolor{loretex-abstract}{HTML}{6B7280}
+\definecolor{loretex-definition}{HTML}{2D9CDB}
+\definecolor{loretex-theorem}{HTML}{2D9CDB}
+\definecolor{loretex-remark}{HTML}{6B7280}
+\definecolor{loretex-important}{HTML}{F2994A}
+
+% -----------------------------------------------------------------------------
+% Icons (from scholia icon set)
+% -----------------------------------------------------------------------------
+\newcommand{\loretex@icon}[1]{\raisebox{-0.15em}{\includegraphics[height=1.1em]{#1}}}
+
+\def\loretex@icon@note{book-open-text.pdf}
+\def\loretex@icon@info{circle-dot.pdf}
+\def\loretex@icon@tip{lightbulb.pdf}
+\def\loretex@icon@success{award.pdf}
+\def\loretex@icon@warning{triangle-alert.pdf}
+\def\loretex@icon@caution{triangle-alert.pdf}
+\def\loretex@icon@danger{ban.pdf}
+\def\loretex@icon@error{ban.pdf}
+\def\loretex@icon@failure{ban.pdf}
+\def\loretex@icon@bug{puzzle.pdf}
+\def\loretex@icon@example{pencil.pdf}
+\def\loretex@icon@question{message-circle-question-mark.pdf}
+\def\loretex@icon@quote{search.pdf}
+\def\loretex@icon@abstract{book-marked.pdf}
+\def\loretex@icon@definition{book-marked.pdf}
+\def\loretex@icon@theorem{pin.pdf}
+\def\loretex@icon@remark{search.pdf}
+\def\loretex@icon@important{star.pdf}
+
+% -----------------------------------------------------------------------------
+% Title helper
+% -----------------------------------------------------------------------------
+\newcommand{\loretexcallouttitle}[3]{%
+  \if\relax\detokenize{#3}\relax%
+    \loretex@icon{#1}\hspace{0.4em}#2%
+  \else%
+    \loretex@icon{#1}\hspace{0.4em}#3%
+  \fi%
+}
+
+% -----------------------------------------------------------------------------
+% Base callout factory
+% -----------------------------------------------------------------------------
+\newcommand{\loretexnewcallout}[4]{%
+  \newtcolorbox{#1box}[1][]{%
+    enhanced,
+    breakable,
+    colback=#4!8,
+    colframe=#4!8,
+    colbacktitle=#4!8,
+    coltitle=#4,
+    fonttitle=\loretexcallouttitlefont,
+    fontupper=\loretexcalloutbodyfont,
+    boxrule=0.8pt,
+    arc=2mm,
+    left=3mm,
+    right=3mm,
+    top=2mm,
+    bottom=2mm,
+    before skip=12pt,
+    after skip=12pt,
+    title={\loretexcallouttitle{#2}{#3}{##1}},
+  }%
+}
+
+% -----------------------------------------------------------------------------
+% Obsidian-style callouts
+% -----------------------------------------------------------------------------
+\loretexnewcallout{note}{\loretex@icon@note}{Note}{loretex-note}
+\loretexnewcallout{info}{\loretex@icon@info}{Info}{loretex-info}
+\loretexnewcallout{tip}{\loretex@icon@tip}{Tip}{loretex-tip}
+\loretexnewcallout{success}{\loretex@icon@success}{Success}{loretex-success}
+\loretexnewcallout{warning}{\loretex@icon@warning}{Warning}{loretex-warning}
+\loretexnewcallout{caution}{\loretex@icon@caution}{Caution}{loretex-caution}
+\loretexnewcallout{danger}{\loretex@icon@danger}{Danger}{loretex-danger}
+\loretexnewcallout{error}{\loretex@icon@error}{Error}{loretex-error}
+\loretexnewcallout{failure}{\loretex@icon@failure}{Failure}{loretex-failure}
+\loretexnewcallout{bug}{\loretex@icon@bug}{Bug}{loretex-bug}
+\loretexnewcallout{example}{\loretex@icon@example}{Example}{loretex-example}
+\loretexnewcallout{question}{\loretex@icon@question}{Question}{loretex-question}
+\loretexnewcallout{quote}{\loretex@icon@quote}{Quote}{loretex-quote}
+\loretexnewcallout{abstract}{\loretex@icon@abstract}{Abstract}{loretex-abstract}
+\loretexnewcallout{definition}{\loretex@icon@definition}{Definition}{loretex-definition}
+\loretexnewcallout{theorem}{\loretex@icon@theorem}{Theorem}{loretex-theorem}
+\loretexnewcallout{remark}{\loretex@icon@remark}{Remark}{loretex-remark}
+\loretexnewcallout{important}{\loretex@icon@important}{Important}{loretex-important}
+\makeatother

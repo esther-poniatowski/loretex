@@ -117,11 +117,23 @@ def _maybe_assemble_main(params: SpecParams, outputs: list[Path]) -> Path | None
     if params.template_path is None:
         return None
     main_output = params.main_output or (params.output_dir / "main.tex")
+    document_font = (
+        params.document_font or r"\renewcommand{\familydefault}{\sfdefault}"
+    )
+    callout_title_font = params.callout_title_font or r"\sffamily\bfseries"
+    callout_body_font = params.callout_body_font or r"\sffamily"
     template_vars = {
+        "document_font": document_font,
         "title": f"{{{params.title}}}" if params.title else "",
         "author": f"{{{params.author}}}" if params.author else "",
         "date": f"{{{params.date}}}" if params.date else "",
         "bibliography": params.bibliography or "",
+        "callout_title_font": (
+            f"\\renewcommand{{\\loretexcallouttitlefont}}{{{callout_title_font}}}"
+        ),
+        "callout_body_font": (
+            f"\\renewcommand{{\\loretexcalloutbodyfont}}{{{callout_body_font}}}"
+        ),
     }
     template_vars.update(
         {str(key): str(value) for key, value in params.template_vars.items()}

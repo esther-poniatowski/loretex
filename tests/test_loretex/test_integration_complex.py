@@ -91,6 +91,12 @@ def test_complex_pipeline_to_pdf(tmp_path: Path) -> None:
     template_src = fixture_root / "template.tex"
     template_dst = working_dir / "template.tex"
     shutil.copy2(template_src, template_dst)
+    callout_src = fixture_root / "loretex-callouts.sty"
+    callout_dst = working_dir / "loretex-callouts.sty"
+    shutil.copy2(callout_src, callout_dst)
+    icons_src = fixture_root / "icons"
+    if icons_src.exists():
+        shutil.copytree(icons_src, working_dir / "icons", dirs_exist_ok=True)
 
     assets_ready = _ensure_assets(working_dir, fixture_root)
 

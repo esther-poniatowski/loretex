@@ -38,6 +38,12 @@ def validate_spec(spec: dict[str, Any]) -> None:
         errors.append("date must be a string.")
     if "bibliography" in spec and not isinstance(spec["bibliography"], (str, list)):
         errors.append("bibliography must be a string or list of strings.")
+    if "callout_title_font" in spec and not isinstance(spec["callout_title_font"], str):
+        errors.append("callout_title_font must be a string.")
+    if "callout_body_font" in spec and not isinstance(spec["callout_body_font"], str):
+        errors.append("callout_body_font must be a string.")
+    if "document_font" in spec and not isinstance(spec["document_font"], str):
+        errors.append("document_font must be a string.")
     if "template_vars" in spec and not isinstance(spec["template_vars"], dict):
         errors.append("template_vars must be a dictionary.")
 
