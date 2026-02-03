@@ -1,3 +1,4 @@
+# ruff: noqa
 """
 ARCHIVED: No longer maintained, replaced by dynamic Jiinja templates in the `meta.yaml` file.
 ====================================================================================================

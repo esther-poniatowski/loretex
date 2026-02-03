@@ -22,11 +22,18 @@ channels:
 dependencies:
   - python>=3.12
   - pyyaml         # for parsing YAML specification file
-  - markdown-it-py # for parsing Markdown to structured data
+  # - markdown-it-py # optional alternative Markdown parser
   - attrs          # for structured representation of configuration or document elements
   - typer          # for command-line interface
   - rich           # for improved CLI output formatting
+  - pytest>=8.0
+  - pytest-cov>=4.0
+  - mypy>=1.8
+  - ruff>=0.1
 
   - pip
   - conda-build
   - conda-index
+  - pip:
+      - -e .
+      - types-PyYAML

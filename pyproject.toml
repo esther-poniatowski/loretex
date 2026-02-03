@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "loretex"
-version = "0.0.0"
+version = "0.1.0"
 authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"}]
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -34,10 +34,18 @@ requires-python = ">=3.12"
 
 dependencies = [
     "pyyaml",            # YAML configuration parsing
-    "markdown-it-py",    # Markdown parsing
     "attrs",             # Data classes and validation
     "typer",             # CLI interface
     "rich",              # Improved CLI output formatting
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.8",
+    "ruff>=0.1",
+    "types-PyYAML",
 ]
 
 
