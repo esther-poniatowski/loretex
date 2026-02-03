@@ -188,31 +188,40 @@ You can also provide custom placeholders via `template_vars` in the spec.
 To use the package programmatically in Python:
 
 ```python
-from loretex import convert_markdown_to_latex
+from loretex import convert_string
 
-latex = convert_markdown_to_latex(\"# Title\\n\\nSome **bold** text.\")
+latex = convert_string(\"# Title\\n\\nSome **bold** text.\")
 ```
 
 ---
 
 ## Configuration
 
-### Environment Variables
-
-|Variable|Description|Default|Required|
-|---|---|---|---|
-|`VAR_1`|Description 1|None|Yes|
-|`VAR_2`|Description 2|`false`|No|
-
 ### Configuration File
 
-Configuration options are specified in YAML files located in the `config/` directory.
+Configuration options are specified in YAML files located in the `config/` directory or via the
+`conversion` section in a spec file.
 
 The canonical configuration schema is provided in [`config/default.yaml`](config/default.yaml).
 
+Example (selected options):
+
 ```yaml
-var_1: value1
-var_2: value2
+conversion:
+  parsing:
+    strip_yaml_front_matter: true
+  math:
+    block_style: brackets
+  inline:
+    inline_math_template: "${content}$"
+    custom_markers:
+      "==": "\\textbf{{{text}}}"
+  horizontal_rule: "\\hrule"
+  headings:
+    anchor_level: 1
+  callouts:
+    environment_map:
+      note: notebox
 ```
 
 #### Conversion Rules
@@ -222,11 +231,11 @@ Conversion rules can be specified in the YAML spec under `conversion` and/or per
 ```yaml
 output_dir: ./out
 anchor_level: 1
-    conversion:
-      callouts:
-        environment_map:
-          note: notebox
-          warning: warningbox
+conversion:
+  callouts:
+    environment_map:
+      note: notebox
+      warning: warningbox
   code_blocks:
     environment: lstlisting
 chapters:

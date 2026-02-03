@@ -79,7 +79,6 @@ The system is designed for:
 
 2. **Preprocessing** (optional)
    - YAML front matter stripping.
-   - Block math normalization.
    - Footnote extraction.
 
 3. **Parsing**

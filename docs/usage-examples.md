@@ -222,7 +222,55 @@ Produces:
 \[E = mc^2\]
 ```
 
-## 13. Images
+## 13. Inline Math & Custom Markers
+
+Inline math is preserved and not altered by inline formatting:
+
+```markdown
+Inline math $a_b + c$ stays as-is.
+```
+
+Custom markers can be configured (e.g., `==...==`):
+
+```yaml
+conversion:
+  inline:
+    custom_markers:
+      "==": "\\textbf{{{text}}}"
+```
+
+Markdown:
+
+```markdown
+This is ==important==.
+```
+
+Produces:
+
+```tex
+This is \textbf{important}.
+```
+
+## 14. Horizontal Rules
+
+```markdown
+---
+```
+
+Config:
+
+```yaml
+conversion:
+  horizontal_rule: "\\hrule"
+```
+
+Produces:
+
+```tex
+\hrule
+```
+
+## 15. Images
 
 ```markdown
 <img src="figs/diagram.svg" width="300">
@@ -236,7 +284,7 @@ Produces:
 \end{center}
 ```
 
-## 14. Tables with Colspan/Rowspan
+## 16. Tables with Colspan/Rowspan
 
 ```markdown
 | A | B | C |
@@ -250,7 +298,7 @@ Produces:
 \multicolumn{2}{c}{Span}
 ```
 
-## 15. Transforms (Plugin Hook)
+## 17. Transforms (Plugin Hook)
 
 ```python
 from loretex.conversion import Document, Paragraph, register_transform, MarkdownToLaTeXConverter
@@ -264,7 +312,7 @@ converter = MarkdownToLaTeXConverter(transform_names=["notice"])
 latex = converter.convert_string("# Title")
 ```
 
-## 16. Image Validation Warnings
+## 18. Image Validation Warnings
 
 ```yaml
 conversion:
@@ -275,6 +323,6 @@ conversion:
 
 If an image is missing, a warning is emitted at conversion time.
 
-## 17. Spec Validation Errors
+## 19. Spec Validation Errors
 
 If required fields are missing, conversion raises a `SpecValidationError` with details.
