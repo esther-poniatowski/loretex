@@ -111,6 +111,14 @@ def test_inline_formatting_rules() -> None:
     assert r"\texttt{code}" in latex
 
 
+def test_custom_inline_marker() -> None:
+    """Convert custom inline markers using configured templates."""
+    converter = MarkdownToLaTeXConverter()
+    markdown = "This is ==important==."
+    latex = converter.convert_string(markdown)
+    assert r"\textbf{important}" in latex
+
+
 def test_inline_code_escapes_special_characters() -> None:
     """Escape LaTeX special characters inside inline code."""
     # Arrange
@@ -187,6 +195,14 @@ def test_inline_formatting_not_applied_in_inline_code() -> None:
     assert r"\textbf{x}" not in latex
 
 
+def test_inline_math_preserved() -> None:
+    """Avoid inline formatting inside inline math."""
+    converter = MarkdownToLaTeXConverter()
+    markdown = "Inline math $a_b + c$ should stay."
+    latex = converter.convert_string(markdown)
+    assert "$a_b + c$" in latex
+
+
 def test_table_converts_to_tabular() -> None:
     """Convert Markdown table to LaTeX tabular environment."""
     # Arrange
@@ -202,6 +218,14 @@ def test_table_converts_to_tabular() -> None:
     assert "1 & 2" in latex
     assert r"\hline" in latex
     assert r"\end{tabular}" in latex
+
+
+def test_horizontal_rule() -> None:
+    """Convert Markdown horizontal rule to LaTeX rule."""
+    converter = MarkdownToLaTeXConverter()
+    markdown = "Paragraph\n\n---\n\nAfter"
+    latex = converter.convert_string(markdown)
+    assert r"\hrule" in latex
 
 
 def test_table_alignment_detection() -> None:

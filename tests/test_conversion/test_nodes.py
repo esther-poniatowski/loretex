@@ -6,9 +6,11 @@ from loretex.conversion import (
     Callout,
     CodeBlock,
     Document,
+    HorizontalRule,
     Image,
     List,
     ListItem,
+    MathBlock,
     NodeVisitor,
     Paragraph,
     Section,
@@ -36,6 +38,12 @@ class MockVisitor(NodeVisitor):
 
     def visit_code_block(self, node: CodeBlock) -> str:
         return f"code:{node.language or 'none'}"
+
+    def visit_horizontal_rule(self, node: HorizontalRule) -> str:
+        return "hr"
+
+    def visit_math_block(self, node: MathBlock) -> str:
+        return f"math:{node.content}"
 
     def visit_callout(self, node: Callout) -> str:
         return f"callout:{node.callout_type}"

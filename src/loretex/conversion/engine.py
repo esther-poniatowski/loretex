@@ -51,7 +51,6 @@ class MarkdownToLaTeXConverter:
             config = self._config
         if config.parsing.strip_yaml_front_matter:
             source = _strip_yaml_front_matter(source)
-        source = _normalize_block_math(source, config)
         source, footnotes = _extract_footnotes(source)
         if overrides or footnotes:
             inline_transformer = InlineTransformer(config, footnotes)
@@ -84,37 +83,6 @@ def _strip_yaml_front_matter(source: str) -> str:
         if lines[idx].strip() == "---":
             return "\n".join(lines[idx + 1 :]).lstrip("\n")
     return source
-
-
-def _normalize_block_math(source: str, config: ConversionConfig) -> str:
-    if config.math.block_style not in {"brackets", "dollars"}:
-        return source
-    lines = source.splitlines()
-    if not lines:
-        return source
-    output_lines: list[str] = []
-    inside = False
-    buffer: list[str] = []
-    for line in lines:
-        stripped = line.strip()
-        if not inside and stripped in {"$$", "\\["}:
-            inside = True
-            buffer = []
-            continue
-        if inside and stripped in {"$$", "\\]"}:
-            inside = False
-            content = "\n".join(buffer)
-            output_lines.append(config.math.format_block(content))
-            buffer = []
-            continue
-        if inside:
-            buffer.append(line)
-        else:
-            output_lines.append(line)
-    if inside:
-        output_lines.append("$$")
-        output_lines.extend(buffer)
-    return "\n".join(output_lines)
 
 
 def _extract_footnotes(source: str) -> tuple[str, dict[str, str]]:

@@ -11,9 +11,11 @@ from .nodes import (
     Callout,
     CodeBlock,
     Document,
+    HorizontalRule,
     Image,
     List,
     ListItem,
+    MathBlock,
     NodeVisitor,
     Paragraph,
     Section,
@@ -105,6 +107,14 @@ class LaTeXGenerator(NodeVisitor):
         begin = self._config.code_blocks.begin(node.language)
         end = self._config.code_blocks.end()
         return f"{begin}\n{node.content}\n{end}"
+
+    def visit_horizontal_rule(self, node: HorizontalRule) -> str:
+        """Convert horizontal rule to LaTeX rule."""
+        return self._config.horizontal_rule.render()
+
+    def visit_math_block(self, node: MathBlock) -> str:
+        """Convert block math to configured LaTeX."""
+        return self._config.math.format_block(node.content)
 
     def visit_callout(self, node: Callout) -> str:
         """Convert callout to custom LaTeX environment."""

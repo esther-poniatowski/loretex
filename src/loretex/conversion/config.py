@@ -64,6 +64,10 @@ class InlineConfig:
     italic_command: str = "textit"
     code_command: str = "texttt"
     line_break_command: str = "newline"
+    inline_math_template: str = "${content}$"
+    custom_markers: Mapping[str, str] = field(
+        default_factory=lambda: {"==": r"\textbf{{{text}}}"}
+    )
     texttt_escape_map: Mapping[str, str] = field(
         default_factory=lambda: dict(DEFAULT_TEXTTT_ESCAPE_MAP)
     )
@@ -190,6 +194,16 @@ class CodeBlockConfig:
 
 
 @dataclass(frozen=True)
+class HorizontalRuleConfig:
+    """Horizontal rule rendering rules."""
+
+    template: str = r"\hrule"
+
+    def render(self) -> str:
+        return self.template
+
+
+@dataclass(frozen=True)
 class CalloutConfig:
     """Callout conversion rules."""
 
@@ -282,6 +296,7 @@ class ConversionConfig:
     images: ImageConfig = field(default_factory=ImageConfig)
     lists: ListConfig = field(default_factory=ListConfig)
     code_blocks: CodeBlockConfig = field(default_factory=CodeBlockConfig)
+    horizontal_rule: HorizontalRuleConfig = field(default_factory=HorizontalRuleConfig)
     callouts: CalloutConfig = field(default_factory=CalloutConfig)
     tables: TableConfig = field(default_factory=TableConfig)
     parsing: ParsingConfig = field(default_factory=ParsingConfig)
@@ -320,6 +335,10 @@ class ConversionConfig:
             italic_command=str(inline_data.get("italic_command", "textit")),
             code_command=str(inline_data.get("code_command", "texttt")),
             line_break_command=str(inline_data.get("line_break_command", "newline")),
+            inline_math_template=str(
+                inline_data.get("inline_math_template", "${content}$")
+            ),
+            custom_markers=_coerce_str_mapping(inline_data.get("custom_markers")),
             texttt_escape_map=_coerce_str_mapping(
                 inline_data.get("texttt_escape_map")
             )
@@ -392,6 +411,10 @@ class ConversionConfig:
             options_template=code_blocks_data.get("options_template"),
         )
 
+        horizontal_rule = HorizontalRuleConfig(
+            template=str(data.get("horizontal_rule", r"\hrule"))
+        )
+
         callouts = CalloutConfig(
             environment_map=_coerce_str_mapping(callouts_data.get("environment_map")),
             default_environment_template=str(
@@ -417,6 +440,7 @@ class ConversionConfig:
             images=images,
             lists=lists,
             code_blocks=code_blocks,
+            horizontal_rule=horizontal_rule,
             callouts=callouts,
             tables=tables,
             parsing=ParsingConfig(
@@ -462,6 +486,8 @@ class ConversionConfig:
                 "italic_command": self.inline.italic_command,
                 "code_command": self.inline.code_command,
                 "line_break_command": self.inline.line_break_command,
+                "inline_math_template": self.inline.inline_math_template,
+                "custom_markers": dict(self.inline.custom_markers),
                 "texttt_escape_map": dict(self.inline.texttt_escape_map),
                 "character_normalization": list(self.inline.character_normalization),
             },
@@ -497,6 +523,7 @@ class ConversionConfig:
                 "environment": self.code_blocks.environment,
                 "options_template": self.code_blocks.options_template,
             },
+            "horizontal_rule": self.horizontal_rule.template,
             "callouts": {
                 "environment_map": dict(self.callouts.environment_map),
                 "default_environment_template": self.callouts.default_environment_template,

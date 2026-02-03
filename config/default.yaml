@@ -12,6 +12,9 @@ inline:
   italic_command: textit
   code_command: texttt
   line_break_command: newline
+  inline_math_template: "${content}$"
+  custom_markers:
+    "==": "\\textbf{{{text}}}"
   texttt_escape_map:
     "\\": "\\textbackslash{}"
     "{": "\\{"
@@ -64,6 +67,8 @@ lists:
 code_blocks:
   environment: lstlisting
   options_template: null
+
+horizontal_rule: "\\hrule"
 
 callouts:
   environment_map: {}

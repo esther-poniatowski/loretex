@@ -16,9 +16,11 @@ from .nodes import (
     Callout,
     CodeBlock,
     Document,
+    HorizontalRule,
     Image,
     List,
     ListItem,
+    MathBlock,
     Node,
     Paragraph,
     Section,
@@ -45,6 +47,7 @@ class MarkdownParser:
     )
     _table_row_pattern = re.compile(r"^\|(.+)\|$")
     _table_separator_pattern = re.compile(r"^\|[\s:|-]+\|$")
+    _horizontal_rule_pattern = re.compile(r"^[ \t]*([-*_])(?:[ \t]*\1){2,}[ \t]*$")
 
     def parse(self, source: str) -> Document:
         """Parse Markdown source into AST.
@@ -88,6 +91,12 @@ class MarkdownParser:
                 i += consumed
                 continue
 
+            if self._is_math_block_start(normalized_line):
+                math_block, consumed = self._parse_math_block(lines, i)
+                nodes.append(math_block)
+                i += consumed
+                continue
+
             if self._is_heading(normalized_line):
                 nodes.append(self._parse_heading(normalized_line, i))
                 i += 1
@@ -110,6 +119,11 @@ class MarkdownParser:
                 i += consumed
                 continue
 
+            if self._is_horizontal_rule(normalized_line):
+                nodes.append(HorizontalRule())
+                i += 1
+                continue
+
             paragraph_lines = [normalized_line]
             i += 1
             while i < len(lines):
@@ -121,6 +135,8 @@ class MarkdownParser:
                     break
                 if self._is_code_fence_start(normalized_line):
                     break
+                if self._is_math_block_start(normalized_line):
+                    break
                 if self._is_heading(normalized_line):
                     break
                 if self._is_list_item(normalized_line):
@@ -128,6 +144,8 @@ class MarkdownParser:
                 if self._is_image_line(normalized_line):
                     break
                 if self._is_table_start(lines, i):
+                    break
+                if self._is_horizontal_rule(normalized_line):
                     break
                 paragraph_lines.append(normalized_line)
                 i += 1
@@ -159,6 +177,32 @@ class MarkdownParser:
             i += 1
 
         return CodeBlock(language=language, content="\n".join(content_lines)), i - start_idx
+
+    def _parse_math_block(self, lines: list[str], start_idx: int) -> tuple[MathBlock, int]:
+        """Parse block math delimited by $$ or \\[."""
+        start_line = self._normalized_line(lines[start_idx]).strip()
+        if start_line in {"$$", "\\["}:
+            end_delimiter = "$$" if start_line == "$$" else "\\]"
+            content_lines: list[str] = []
+            i = start_idx + 1
+            while i < len(lines):
+                line = self._normalized_line(lines[i]).strip()
+                if line == end_delimiter:
+                    i += 1
+                    break
+                content_lines.append(self._normalized_line(lines[i]))
+                i += 1
+            return MathBlock(content="\n".join(content_lines)), i - start_idx
+
+        if start_line.startswith("$$") and start_line.endswith("$$") and len(start_line) > 4:
+            content = start_line[2:-2].strip()
+            return MathBlock(content=content), 1
+
+        if start_line.startswith("\\[") and start_line.endswith("\\]") and len(start_line) > 4:
+            content = start_line[2:-2].strip()
+            return MathBlock(content=content), 1
+
+        return MathBlock(content=start_line), 1
 
     def _parse_callout(self, lines: list[str], start_idx: int) -> tuple[Callout, int]:
         """Parse callout block."""
@@ -359,6 +403,21 @@ class MarkdownParser:
     def _is_image_line(self, line: str) -> bool:
         """Check if line is an image tag on its own line."""
         return self._image_line_pattern.match(line.strip()) is not None
+
+    def _is_math_block_start(self, line: str) -> bool:
+        """Check if line starts a block math section."""
+        stripped = line.strip()
+        if stripped in {"$$", "\\["}:
+            return True
+        if stripped.startswith("$$") and stripped.endswith("$$") and len(stripped) > 4:
+            return True
+        if stripped.startswith("\\[") and stripped.endswith("\\]") and len(stripped) > 4:
+            return True
+        return False
+
+    def _is_horizontal_rule(self, line: str) -> bool:
+        """Check if line is a horizontal rule."""
+        return self._horizontal_rule_pattern.match(line) is not None
 
     def _is_ordered_marker(self, marker: str) -> bool:
         """Check if list marker is ordered."""

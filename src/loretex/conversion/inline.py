@@ -12,6 +12,8 @@ class InlineTransformer:
     """Apply inline Markdown transformations to LaTeX."""
 
     _inline_code_pattern = re.compile(r"`([^`\n]+)`")
+    _inline_math_dollar_pattern = re.compile(r"(?<!\\)\$(?!\$)([^$\n]+?)\$(?!\$)")
+    _inline_math_paren_pattern = re.compile(r"\\\((.+?)\\\)")
     _footnote_ref_pattern = re.compile(r"\[\^([^\]]+)\]")
     _wiki_link_pattern = re.compile(r"\[\[([^\]]+)\]\]")
     _citation_pattern = re.compile(r"\[@([^\]]+)\]")
@@ -58,8 +60,10 @@ class InlineTransformer:
 
     def _convert_non_code(self, text: str) -> str:
         """Convert inline formatting for non-code segments."""
+        text, math_spans = self._extract_inline_math(text)
         line_break = self._ensure_command(self._config.inline.line_break_command)
         text = re.sub(r"<br\s*/?>", lambda _match: f"{line_break} ", text)
+        text = self._apply_custom_markers(text)
         text = self._image_pattern.sub(
             lambda match: self._config.images.format_block(
                 match.group(1), int(match.group(2))
@@ -100,7 +104,8 @@ class InlineTransformer:
             lambda match: f"{italic_command}{{{match.group(1)}}}",
             text,
         )
-        return self._normalize_characters(text)
+        text = self._normalize_characters(text)
+        return self._restore_inline_math(text, math_spans)
 
     def _format_inline_code(self, code: str) -> str:
         """Format inline code as LaTeX texttt with escaping."""
@@ -118,6 +123,68 @@ class InlineTransformer:
         for source, target in self._config.inline.character_normalization:
             normalized = normalized.replace(source, target)
         return normalized
+
+    def _extract_inline_math(self, text: str) -> tuple[str, dict[str, str]]:
+        placeholders: dict[str, str] = {}
+        counter = 0
+
+        def _replace(pattern: re.Pattern[str], source: str) -> str:
+            nonlocal counter
+
+            def repl(match: re.Match[str]) -> str:
+                nonlocal counter
+                content = match.group(1)
+                token = f"__LORETEX_MATH_{counter}__"
+                placeholders[token] = self._format_inline_math(content)
+                counter += 1
+                return token
+
+            return pattern.sub(repl, source)
+
+        text = _replace(self._inline_math_paren_pattern, text)
+        text = _replace(self._inline_math_dollar_pattern, text)
+        return text, placeholders
+
+    def _restore_inline_math(self, text: str, placeholders: dict[str, str]) -> str:
+        if not placeholders:
+            return text
+        restored = text
+        for token, value in placeholders.items():
+            restored = restored.replace(token, value)
+        return restored
+
+    def _format_inline_math(self, content: str) -> str:
+        template = self._config.inline.inline_math_template
+        if "{content}" in template:
+            return template.format(content=content)
+        if "{text}" in template:
+            return template.format(text=content)
+        return f"{template}{content}"
+
+    def _apply_custom_markers(self, text: str) -> str:
+        if not self._config.inline.custom_markers:
+            return text
+        markers = sorted(
+            self._config.inline.custom_markers.items(),
+            key=lambda item: len(item[0]),
+            reverse=True,
+        )
+        rendered = text
+        for marker, template in markers:
+            if not marker:
+                continue
+            pattern = re.compile(rf"{re.escape(marker)}([^\n]+?){re.escape(marker)}")
+            rendered = pattern.sub(
+                lambda match: self._format_custom_marker(template, match.group(1)),
+                rendered,
+            )
+        return rendered
+
+    def _format_custom_marker(self, template: str, text: str) -> str:
+        if "{text}" in template or "{content}" in template:
+            return template.format(text=text, content=text)
+        command = self._ensure_command(template)
+        return f"{command}{{{text}}}"
 
     def _format_link(self, text: str, url: str) -> str:
         if url.startswith("#"):

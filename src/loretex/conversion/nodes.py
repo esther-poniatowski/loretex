@@ -95,6 +95,24 @@ class CodeBlock(Node):
 
 
 @dataclass
+class HorizontalRule(Node):
+    """Horizontal rule block."""
+
+    def accept(self, visitor: NodeVisitor) -> str:
+        return visitor.visit_horizontal_rule(self)
+
+
+@dataclass
+class MathBlock(Node):
+    """Block math expression."""
+
+    content: str
+
+    def accept(self, visitor: NodeVisitor) -> str:
+        return visitor.visit_math_block(self)
+
+
+@dataclass
 class Callout(Node):
     """Callout block with an optional title."""
 
@@ -166,6 +184,16 @@ class NodeVisitor(ABC):
     @abstractmethod
     def visit_code_block(self, node: CodeBlock) -> str:
         """Visit code block node."""
+        ...
+
+    @abstractmethod
+    def visit_horizontal_rule(self, node: HorizontalRule) -> str:
+        """Visit horizontal rule node."""
+        ...
+
+    @abstractmethod
+    def visit_math_block(self, node: MathBlock) -> str:
+        """Visit math block node."""
         ...
 
     @abstractmethod
