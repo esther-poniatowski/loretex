@@ -253,7 +253,7 @@ class MathConfig:
 
     def format_block(self, content: str) -> str:
         if self.block_style == "brackets":
-            return f"\\\\[{content}\\\\]"
+            return f"\\[{content}\\]"
         return f"$${content}$$"
 
 

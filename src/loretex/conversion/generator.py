@@ -158,13 +158,13 @@ class LaTeXGenerator(NodeVisitor):
                     idx += 1
                 rendered_cells.append(latex)
             cells = " & ".join(rendered_cells)
-            body_lines.append(f"{cells} \\")
+            body_lines.append(f"{cells} \\\\")
 
         if self._config.tables.include_hlines:
             return (
                 f"\\begin{{{self._config.tables.environment}}}{{{col_spec}}}\n"
                 f"\\hline\n"
-                f"{header_cells} \\\n"
+                f"{header_cells} \\\\\n"
                 f"\\hline\n"
                 + "\n".join(body_lines)
                 + "\n"
@@ -174,7 +174,7 @@ class LaTeXGenerator(NodeVisitor):
 
         return (
             f"\\begin{{{self._config.tables.environment}}}{{{col_spec}}}\n"
-            f"{header_cells} \\\n"
+            f"{header_cells} \\\\\n"
             + "\n".join(body_lines)
             + "\n"
             f"\\end{{{self._config.tables.environment}}}"
