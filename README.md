@@ -135,12 +135,56 @@ To display the list of available commands and options:
 loretex --help
 ```
 
+#### Simple Conversion (Single File)
+
+Convert one Markdown file to LaTeX (output to stdout by default):
+
+```sh
+loretex convert-file path/to/input.md
+```
+
+Write to a file:
+
+```sh
+loretex convert-file path/to/input.md --out path/to/output.tex
+```
+
+#### Spec-Based Conversion (Multiple Files)
+
+Use a YAML spec to convert multiple chapters:
+
+```sh
+loretex convert --spec path/to/spec.yml
+```
+
+#### Template Assembly (Optional)
+
+Add a `template` and `main_output` in the spec to generate a `main.tex` file
+with `\\input{...}` statements for each chapter:
+
+```yaml
+output_dir: ./tex
+template: ./templates/main.tex
+main_output: ./tex/main.tex
+chapters:
+  - file: notes/intro.md
+```
+
+Template must include a `{{content}}` placeholder where inputs are inserted.
+An example template is available at `config/template.tex`.
+
+Additional placeholders supported: `{{title}}`, `{{author}}`, `{{date}}`, and `{{bibliography}}`.
+Title/author/date values are inserted already wrapped in braces for convenience (e.g. `\title{{title}}`).
+You can also provide custom placeholders via `template_vars` in the spec.
+
 ### Programmatic Usage
 
 To use the package programmatically in Python:
 
 ```python
-import loretex
+from loretex import convert_markdown_to_latex
+
+latex = convert_markdown_to_latex(\"# Title\\n\\nSome **bold** text.\")
 ```
 
 ---
@@ -165,15 +209,119 @@ var_1: value1
 var_2: value2
 ```
 
+#### Conversion Rules
+
+Conversion rules can be specified in the YAML spec under `conversion` and/or per chapter:
+
+```yaml
+output_dir: ./out
+anchor_level: 1
+    conversion:
+      callouts:
+        environment_map:
+          note: notebox
+          warning: warningbox
+  code_blocks:
+    environment: lstlisting
+chapters:
+  - file: notes/intro.md
+    conversion:
+      headings:
+        anchor_level: 2
+```
+
+##### Internal Links and Labels
+
+Enable automatic labels for headings and internal references:
+
+```yaml
+conversion:
+  labels:
+    auto_label_headings: true
+    label_prefix: sec
+  links:
+    internal_ref_template: "\\ref{{{label}}}"
+```
+
+Markdown link targets like `[see](#some-section)` become `\\ref{some-section}`.
+
+##### Footnotes and Wiki Links
+
+Footnotes:
+
+```markdown
+Here is a note.[^1]
+
+[^1]: Footnote text.
+```
+
+Wiki links:
+
+```markdown
+See [[My Note]] or [[My Note|alias]].
+```
+
+Both are configurable via `conversion.footnotes` and `conversion.wiki_links`.
+
+##### Citations (With Locators)
+
+```markdown
+See [@doe2020, p. 12; @smith2021].
+```
+
+The locator will be rendered with `conversion.citations.cite_with_locator_template`.
+
+##### Table Spans (Extension)
+
+You can use `{col=2}` or `{row=2}` at the end of a table cell:
+
+```markdown
+| A | B | C |
+|---|---|---|
+| Span{col=2} | X |
+```
+
+##### Custom Transforms
+
+You can register and apply AST transforms programmatically:
+
+```python
+from loretex.conversion import MarkdownToLaTeXConverter, register_transform, Document, Paragraph
+
+def add_notice(doc: Document) -> Document:
+    return Document(children=[Paragraph("NOTICE")] + doc.children)
+
+register_transform("notice", add_notice)
+converter = MarkdownToLaTeXConverter(transform_names=["notice"])
+latex = converter.convert_string("# Title")
+```
+
 ---
 
 ## Documentation
 
 - [User Guide](https://esther-poniatowski.github.io/loretex/guide/)
 - [API Documentation](https://esther-poniatowski.github.io/loretex/api/)
+- [Usage Examples](docs/usage-examples.md)
+- [Architecture](docs/architecture.md)
+- [Release Checklist](docs/release-checklist.md)
 
 > [!NOTE]
 > Documentation can also be browsed locally from the [`docs/`](docs/) directory.
+
+## Architecture & Extension Points
+
+Key modules:
+
+- Conversion engine: `loretex/conversion/` (parser, AST, inline rules, generator).
+- Pipeline/assembly: `loretex/pipeline/` (template rendering, main.tex assembly).
+- Public API: `loretex/api.py` (simple entry points).
+- Spec validation: `loretex/config/validate.py`.
+
+Extension points:
+
+- AST transforms via registry (`register_transform`, `transform_names`).
+- Config-driven rules in `config/default.yaml`.
 
 ## Support
 
