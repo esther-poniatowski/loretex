@@ -41,9 +41,9 @@ class Chapter:
     tex_output : Path
         Path to the output LaTeX file to be written.
     local_anchor : int
-        Heading level to be mapped to `\section{}` in LaTeX.
+        Heading level to be mapped to `\\section{}` in LaTeX.
     options : dict
-        Additional options passed from the specification file.
+        Conversion rule overrides for this chapter.
 
     Methods
     -------
@@ -76,11 +76,20 @@ class Chapter:
             Fully initialized Chapter instance.
         """
         md = Path(chapter_dict["file"])
+        options = chapter_dict.get("conversion")
+        if options is None:
+            options = chapter_dict.get("options")
+        if options is None:
+            options = chapter_dict.get("rules")
+        if options is None:
+            options = {}
+        if not isinstance(options, dict):
+            raise TypeError("Chapter conversion options must be a dictionary.")
         return cls(
             md_path=md,
             tex_output=output_dir / f"{md.stem}.tex",
             local_anchor=chapter_dict.get("anchor_level", default_anchor),
-            options=chapter_dict
+            options=options
         )
 
 
@@ -97,6 +106,22 @@ class SpecParams:
         Default anchor level for heading conversion.
     chapters : List[Chapter]
         List of Chapter objects to be processed.
+    conversion : dict
+        Global conversion rule overrides.
+    template_path : Path | None
+        Path to a LaTeX template file containing the {{content}} placeholder.
+    main_output : Path | None
+        Path to the assembled main .tex output file.
+    template_vars : dict
+        Extra variables available to templates.
+    bibliography : str | None
+        Bibliography snippet inserted into templates.
+    title : str | None
+        Document title for templates.
+    author : str | None
+        Document author for templates.
+    date : str | None
+        Document date for templates.
 
     Methods
     -------
@@ -107,6 +132,14 @@ class SpecParams:
     output_dir: Path
     anchor_level: int
     chapters: List[Chapter]
+    conversion: dict
+    template_path: Path | None
+    main_output: Path | None
+    template_vars: dict
+    bibliography: str | None
+    title: str | None
+    author: str | None
+    date: str | None
 
     @classmethod
     def from_spec(cls, spec: dict):
@@ -125,8 +158,44 @@ class SpecParams:
         """
         output_dir = Path(spec.get("output_dir", "./tex"))
         anchor_level = spec.get("anchor_level", 1)
+        conversion = spec.get("conversion")
+        if conversion is None:
+            conversion = spec.get("rules")
+        if conversion is None:
+            conversion = {}
+        if not isinstance(conversion, dict):
+            raise TypeError("Spec conversion rules must be a dictionary.")
+        template_path = spec.get("template")
+        if template_path is not None:
+            template_path = Path(template_path)
+        main_output = spec.get("main_output")
+        if main_output is not None:
+            main_output = Path(main_output)
+        template_vars = spec.get("template_vars") or {}
+        if not isinstance(template_vars, dict):
+            raise TypeError("template_vars must be a dictionary.")
+        bibliography = spec.get("bibliography")
+        if isinstance(bibliography, list):
+            bibliography = "\n".join(str(item) for item in bibliography)
+        if bibliography is not None and not isinstance(bibliography, str):
+            raise TypeError("bibliography must be a string or list of strings.")
+        title = spec.get("title")
+        author = spec.get("author")
+        date = spec.get("date")
         chapters = [
             Chapter.from_dict(ch, output_dir, anchor_level)
             for ch in spec.get("chapters", [])
         ]
-        return cls(output_dir=output_dir, anchor_level=anchor_level, chapters=chapters)
+        return cls(
+            output_dir=output_dir,
+            anchor_level=anchor_level,
+            chapters=chapters,
+            conversion=conversion,
+            template_path=template_path,
+            main_output=main_output,
+            template_vars=template_vars,
+            bibliography=bibliography,
+            title=title,
+            author=author,
+            date=date,
+        )

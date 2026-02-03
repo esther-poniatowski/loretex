@@ -1,0 +1,95 @@
+headings:
+  anchor_level: 1
+  commands:
+    1: section
+    2: subsection
+    3: subsubsection
+    4: paragraph
+  fallback_command: paragraph
+
+inline:
+  bold_command: textbf
+  italic_command: textit
+  code_command: texttt
+  line_break_command: newline
+  texttt_escape_map:
+    "\\": "\\textbackslash{}"
+    "{": "\\{"
+    "}": "\\}"
+    "#": "\\#"
+    "$": "\\$"
+    "%": "\\%"
+    "&": "\\&"
+    "_": "\\_"
+    "~": "\\textasciitilde{}"
+    "^": "\\textasciicircum{}"
+  character_normalization:
+    - ["\u2019", "'"]
+    - ["≤", "\\leq"]
+    - ["≥", "\\geq"]
+    - ["œ", "oe"]
+    - ["–", "-"]
+
+links:
+  external_link_template: "\\href{{{url}}}{{{text}}}"
+  url_only_template: "\\url{{{url}}}"
+  autolink_template: "\\url{{{url}}}"
+  internal_ref_template: "\\ref{{{label}}}"
+
+citations:
+  cite_template: "\\cite{{{keys}}}"
+  cite_with_locator_template: "\\cite[{locator}]{{{keys}}}"
+  separator: ","
+  multi_cite_separator: " "
+
+footnotes:
+  footnote_template: "\\footnote{{{text}}}"
+
+images:
+  path_prefix: ../figures-pdfs
+  path_suffix: .pdf
+  width_unit: "\\htmlpx"
+  include_command: "\\includegraphics"
+  block_template: |
+    \\begin{{center}}
+    {include_command}[width={width}{unit}]{{{path_prefix}/{source}{path_suffix}}}
+    \\end{{center}}
+  base_dir: null
+  validate_paths: false
+
+lists:
+  unordered_environment: itemize
+  ordered_environment: enumerate
+
+code_blocks:
+  environment: lstlisting
+  options_template: null
+
+callouts:
+  environment_map: {}
+  default_environment_template: "{type}box"
+  title_template: "[{title}]"
+  type_normalization: lower
+
+tables:
+  environment: tabular
+  include_hlines: true
+  multicolumn_align: c
+  multirow_command: multirow
+
+parsing:
+  strip_yaml_front_matter: false
+
+math:
+  block_style: dollars
+
+labels:
+  auto_label_headings: false
+  label_template: "\\label{{{label}}}"
+  label_prefix: ""
+  label_separator: "-"
+
+wiki_links:
+  link_template: "\\ref{{{label}}}"
+  alias_template: "\\ref{{{label}}}"
+  label_separator: "-"
