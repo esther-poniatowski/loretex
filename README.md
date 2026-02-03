@@ -224,6 +224,23 @@ conversion:
       note: notebox
 ```
 
+#### Template Fonts and Callouts
+
+In the spec (top-level), you can configure document-level fonts and callout fonts:
+
+```yaml
+document_font: "\\renewcommand{\\familydefault}{\\sfdefault}"
+callout_title_font: "\\sffamily\\bfseries"
+callout_body_font: "\\sffamily"
+```
+
+These placeholders are expected in your template (see `config/template.tex`).
+
+Loretex ships a default callouts style file and icons under `loretex/latex/`.
+Ensure `loretex-callouts.sty` and the `icons/` folder are available to LaTeX at
+compile time (for example, by placing them alongside `main.tex` or adding their
+location to your LaTeX search path).
+
 #### Conversion Rules
 
 Conversion rules can be specified in the YAML spec under `conversion` and/or per chapter:

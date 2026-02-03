@@ -105,7 +105,25 @@ chapters:
         anchor_level: 2
 ```
 
-## 6. Headings & Labels
+## 6. Callouts + Fonts
+
+Spec (top-level):
+
+```yaml
+document_font: "\\renewcommand{\\familydefault}{\\sfdefault}"
+callout_title_font: "\\sffamily\\bfseries"
+callout_body_font: "\\sffamily"
+conversion:
+  callouts:
+    environment_map:
+      note: notebox
+      warning: warningbox
+```
+
+Ensure `loretex-callouts.sty` and its `icons/` folder are available to LaTeX at
+compile time (e.g., in the same directory as `main.tex` or on the LaTeX path).
+
+## 7. Headings & Labels
 
 ```yaml
 conversion:
@@ -125,7 +143,7 @@ Produces:
 \label{sec-introduction}
 ```
 
-## 7. Internal Links
+## 8. Internal Links
 
 ```markdown
 See [Introduction](#introduction).
@@ -137,7 +155,7 @@ Produces:
 See \ref{introduction}.
 ```
 
-## 8. External Links
+## 9. External Links
 
 ```markdown
 Read [the docs](https://example.com).
@@ -151,7 +169,7 @@ Produces:
 \url{https://example.com}
 ```
 
-## 9. Citations (With Locators)
+## 10. Citations (With Locators)
 
 ```markdown
 See [@doe2020].
@@ -174,7 +192,7 @@ conversion:
     cite_with_locator_template: "\\cite[{locator}]{{{keys}}}"
 ```
 
-## 10. Footnotes
+## 11. Footnotes
 
 ```markdown
 Text with footnote.[^1]
@@ -188,7 +206,7 @@ Produces:
 Text with footnote.\footnote{Footnote text.}
 ```
 
-## 11. Wiki Links (Obsidian)
+## 12. Wiki Links (Obsidian)
 
 ```markdown
 See [[My Note]] and [[My Note|alias]].
@@ -200,7 +218,7 @@ Produces:
 \ref{my-note}
 ```
 
-## 12. Math Blocks
+## 13. Math Blocks
 
 ```markdown
 $$
@@ -222,7 +240,7 @@ Produces:
 \[E = mc^2\]
 ```
 
-## 13. Inline Math & Custom Markers
+## 14. Inline Math & Custom Markers
 
 Inline math is preserved and not altered by inline formatting:
 
@@ -251,7 +269,7 @@ Produces:
 This is \textbf{important}.
 ```
 
-## 14. Horizontal Rules
+## 15. Horizontal Rules
 
 ```markdown
 ---
@@ -270,7 +288,7 @@ Produces:
 \hrule
 ```
 
-## 15. Images
+## 16. Images
 
 ```markdown
 <img src="figs/diagram.svg" width="300">
@@ -284,7 +302,7 @@ Produces:
 \end{center}
 ```
 
-## 16. Tables with Colspan/Rowspan
+## 17. Tables with Colspan/Rowspan
 
 ```markdown
 | A | B | C |
@@ -298,7 +316,7 @@ Produces:
 \multicolumn{2}{c}{Span}
 ```
 
-## 17. Transforms (Plugin Hook)
+## 18. Transforms (Plugin Hook)
 
 ```python
 from loretex.conversion import Document, Paragraph, register_transform, MarkdownToLaTeXConverter
@@ -312,7 +330,7 @@ converter = MarkdownToLaTeXConverter(transform_names=["notice"])
 latex = converter.convert_string("# Title")
 ```
 
-## 18. Image Validation Warnings
+## 19. Image Validation Warnings
 
 ```yaml
 conversion:
@@ -323,6 +341,6 @@ conversion:
 
 If an image is missing, a warning is emitted at conversion time.
 
-## 19. Spec Validation Errors
+## 20. Spec Validation Errors
 
 If required fields are missing, conversion raises a `SpecValidationError` with details.

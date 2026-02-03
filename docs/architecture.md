@@ -11,6 +11,7 @@ Loretex is organized into a small set of modules, each with a single responsibil
 - `loretex.api`: Public API (simple entry points).
 - `loretex.config`: Spec parsing and validation.
 - `loretex.cli`: Command-line interface.
+- `loretex.latex`: Packaged LaTeX assets (callouts style and icons).
 
 The system is designed for:
 
@@ -57,6 +58,9 @@ The system is designed for:
 
 - `assembly.py`:
   - Generates `main.tex` from a template and `\input{...}` lines for chapter files.
+  - Template placeholders include `{{content}}`, `{{title}}`, `{{author}}`, `{{date}}`,
+    `{{bibliography}}`, plus `{{document_font}}`, `{{callout_title_font}}`,
+    and `{{callout_body_font}}`.
 
 ### 3. Public API (`loretex.api`)
 
@@ -104,6 +108,9 @@ The system is designed for:
 
 - **Templates**:
   - Customize layout of `main.tex` with placeholders.
+
+- **LaTeX Assets**:
+  - Packaged callout style file and icons under `loretex/latex/`.
 
 ## Design Principles Applied
 
