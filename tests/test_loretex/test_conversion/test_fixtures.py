@@ -8,7 +8,7 @@ import pytest
 
 from loretex.conversion import MarkdownToLaTeXConverter
 
-FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures"
+FIXTURE_DIR = Path(__file__).resolve().parents[2] / "fixtures"
 
 FIXTURE_EXPECTATIONS: list[tuple[str, list[str]]] = [
     (

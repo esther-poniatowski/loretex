@@ -154,7 +154,7 @@ def test_character_normalization() -> None:
     """Normalize typographic characters to LaTeX equivalents."""
     # Arrange
     converter = MarkdownToLaTeXConverter()
-    markdown = "≤ ≥ œ – ’"
+    markdown = "\u2264 \u2265 \u0153 \u2013 \u2019"
 
     # Act
     latex = converter.convert_string(markdown)
