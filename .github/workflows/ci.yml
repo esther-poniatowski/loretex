@@ -26,8 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .[dev]
 
-      - name: Ruff
-        run: ruff check .
+      - name: Black
+        run: black --check --config config/tools/black.toml src/ tests/
+
+      - name: Pylint
+        run: pylint --rcfile=config/tools/pylintrc.ini src/loretex/
 
       - name: Mypy
         run: mypy src
