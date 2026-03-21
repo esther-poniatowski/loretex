@@ -44,7 +44,6 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=4.0",
     "mypy>=1.8",
-    "ruff>=0.1",
     "types-PyYAML",
 ]
 
@@ -64,3 +63,12 @@ loretex = ["latex/*.sty", "latex/icons/pdf/*.pdf"]
 
 [project.scripts]
 loretex = "loretex.cli:app"
+
+
+# --- Tool Configurations --------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
