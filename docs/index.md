@@ -4,9 +4,18 @@ Converter between Markdown notes and LaTeX files.
 
 ```{toctree}
 :maxdepth: 2
-:caption: Contents
+:caption: User Guide
 
-guide/index
+guide/usage-examples
+guide/development
+guide/release-checklist
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Reference
+
+architecture
 api/index
 ```
 
