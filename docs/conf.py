@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath("../src"))
 # -- Project information -----------------------------------------------------
 
 project = "Loretex"
-copyright = "2024, Esther Poniatowski"
+copyright = "2025, Esther Poniatowski"
 author = "Esther Poniatowski"
 release = "0.1.0"
 
@@ -71,4 +71,5 @@ autodoc_member_order = "bysource"
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
 }

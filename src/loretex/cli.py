@@ -29,12 +29,29 @@ from pathlib import Path
 
 import typer
 
+from loretex import info as pkg_info, __version__
 from loretex.api import convert_file as api_convert_file
 from loretex.api import convert_spec as api_convert_spec
 from loretex.conversion import ConversionConfig
 from loretex.utils.io import load_yaml_spec
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(add_completion=False, no_args_is_help=True)
+
+
+@app.callback()
+def main_callback(
+    version: bool = typer.Option(
+        False, "--version", "-v", help="Show the package version and exit."
+    )
+) -> None:
+    if version:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+@app.command("info")
+def cli_info() -> None:
+    """Display package version and platform information."""
+    typer.echo(pkg_info())
 
 
 @app.command()

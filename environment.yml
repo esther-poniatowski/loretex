@@ -20,7 +20,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.12
+  - python=3.12
   - pyyaml         # for parsing YAML specification file
   # - markdown-it-py # optional alternative Markdown parser
   - attrs          # for structured representation of configuration or document elements
@@ -38,6 +38,7 @@ dependencies:
   - conda-build
   - conda-index
   - sphinx
+  - sphinxcontrib-napoleon
   - myst-parser
   - sphinx-rtd-theme
   - esbonio
