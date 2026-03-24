@@ -28,6 +28,11 @@ from typing import List
 
 import attr
 
+# Presentation defaults for template assembly (Fix 6: centralised here, not in api.py)
+DEFAULT_DOCUMENT_FONT: str = r"\renewcommand{\familydefault}{\sfdefault}"
+DEFAULT_CALLOUT_TITLE_FONT: str = r"\sffamily\bfseries"
+DEFAULT_CALLOUT_BODY_FONT: str = r"\sffamily"
+
 
 @attr.s(auto_attribs=True, frozen=True)
 class Chapter:

@@ -33,6 +33,7 @@ from loretex import info as pkg_info, __version__
 from loretex.api import convert_file as api_convert_file
 from loretex.api import convert_spec as api_convert_spec
 from loretex.conversion import ConversionConfig
+from loretex.conversion.config import has_anchor_override
 from loretex.utils.io import load_yaml_spec
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -81,11 +82,11 @@ def convert(
     """
 
     spec_data = load_yaml_spec(spec_path) or {}
-    outputs = api_convert_spec(spec_path)
-    for output in outputs:
+    result = api_convert_spec(spec_data)
+    for output in result.chapter_outputs:
         typer.echo(f"[SUCCESS] Generated {output}")
-    if spec_data.get("template"):
-        typer.echo("[SUCCESS] Generated main.tex")
+    if result.main_output is not None:
+        typer.echo(f"[SUCCESS] Generated {result.main_output.name}")
 
 
 @app.command("convert-file")
@@ -108,7 +109,7 @@ def convert_file(
     if config_data is None:
         config_data = {}
     config = ConversionConfig.from_dict(config_data)
-    if not _has_anchor_override(config_data):
+    if not has_anchor_override(config_data):
         config = config.with_overrides({"headings": {"anchor_level": anchor_level}})
     latex_text = api_convert_file(input_path, output_path, config=config)
 
@@ -119,6 +120,3 @@ def convert_file(
     typer.echo(f"[SUCCESS] Converted {input_path} to {output_path}")
 
 
-def _has_anchor_override(data: dict) -> bool:
-    headings = data.get("headings")
-    return isinstance(headings, dict) and "anchor_level" in headings

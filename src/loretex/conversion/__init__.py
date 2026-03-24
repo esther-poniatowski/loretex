@@ -1,6 +1,6 @@
 """Conversion engine public API."""
 
-from .config import ConversionConfig
+from .config import ConversionConfig, has_anchor_override
 from .engine import MarkdownToLaTeXConverter, convert_string
 from .exceptions import (
     ConversionError,
@@ -14,7 +14,15 @@ from .exceptions import (
 )
 from .generator import LaTeXGenerator
 from .inline import InlineTransformer
-from .registry import get_transform, list_transforms, register_transform, resolve_transforms
+from .registry import (
+    clear_transforms,
+    get_transform,
+    list_transforms,
+    register_transform,
+    resolve_transforms,
+    restore_transforms,
+    snapshot_transforms,
+)
 from .nodes import (
     Callout,
     CodeBlock,
@@ -51,9 +59,9 @@ __all__ = [
     "List",
     "ListItem",
     "LoretexError",
-    "MathBlock",
     "MarkdownParser",
     "MarkdownToLaTeXConverter",
+    "MathBlock",
     "Node",
     "NodeVisitor",
     "Paragraph",
@@ -62,9 +70,13 @@ __all__ = [
     "Table",
     "Transform",
     "apply_transforms",
+    "clear_transforms",
     "convert_string",
     "get_transform",
+    "has_anchor_override",
     "list_transforms",
     "register_transform",
     "resolve_transforms",
+    "restore_transforms",
+    "snapshot_transforms",
 ]

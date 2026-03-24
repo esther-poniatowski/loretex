@@ -3,19 +3,22 @@ Module: `loretex.parsers.markdown_converter`
 
 Markdown-to-LaTeX transformation logic.
 
-This module implements the core function `convert_markdown_to_latex` for converting Markdown strings
-into LaTeX-formatted output. The conversion is modular and structured for extensibility.
+This module provides the legacy ``convert_markdown_to_latex`` helper. It delegates to the
+canonical ``api.convert_string`` entry point so that all conversion paths share a single
+implementation.
 
 Functions
 ---------
-convert_markdown_to_latex(markdown_text: str, anchor_level: int = 1, options: Dict = None) -> str
+convert_markdown_to_latex(markdown_text: str, anchor_level: int = 1, options: dict = None) -> str
     Convert a Markdown string to LaTeX format with specified heading levels and options.
 """
+
+from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import Dict
 
-from loretex.conversion import ConversionConfig, MarkdownToLaTeXConverter
+from loretex.conversion.config import has_anchor_override
 
 
 def convert_markdown_to_latex(
@@ -40,12 +43,13 @@ def convert_markdown_to_latex(
     str
         LaTeX-formatted output string.
     """
+    from loretex.api import convert_string  # deferred to avoid circular import
+
     conversion_data = _extract_conversion_options(options)
-    config = ConversionConfig.from_dict(conversion_data)
-    if anchor_level is not None and not _has_anchor_override(conversion_data):
-        config = config.with_overrides({"headings": {"anchor_level": anchor_level}})
-    converter = MarkdownToLaTeXConverter(config=config)
-    return converter.convert_string(markdown_text)
+    overrides: dict | None = None
+    if anchor_level is not None and not has_anchor_override(conversion_data):
+        overrides = {"headings": {"anchor_level": anchor_level}}
+    return convert_string(markdown_text, config=conversion_data, overrides=overrides)
 
 
 def _extract_conversion_options(options: Dict | None) -> Mapping[str, object]:
@@ -55,8 +59,3 @@ def _extract_conversion_options(options: Dict | None) -> Mapping[str, object]:
         if "rules" in options:
             return options.get("rules") or {}
     return options or {}
-
-
-def _has_anchor_override(options: Mapping[str, object]) -> bool:
-    headings = options.get("headings")
-    return isinstance(headings, Mapping) and "anchor_level" in headings

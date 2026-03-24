@@ -411,9 +411,12 @@ class ConversionConfig:
             options_template=code_blocks_data.get("options_template"),
         )
 
-        horizontal_rule = HorizontalRuleConfig(
-            template=str(data.get("horizontal_rule", r"\hrule"))
-        )
+        hr_data = data.get("horizontal_rule", r"\hrule")
+        if isinstance(hr_data, Mapping):
+            hr_template = str(hr_data.get("template", r"\hrule"))
+        else:
+            hr_template = str(hr_data)
+        horizontal_rule = HorizontalRuleConfig(template=hr_template)
 
         callouts = CalloutConfig(
             environment_map=_coerce_str_mapping(callouts_data.get("environment_map")),
@@ -523,7 +526,9 @@ class ConversionConfig:
                 "environment": self.code_blocks.environment,
                 "options_template": self.code_blocks.options_template,
             },
-            "horizontal_rule": self.horizontal_rule.template,
+            "horizontal_rule": {
+                "template": self.horizontal_rule.template,
+            },
             "callouts": {
                 "environment_map": dict(self.callouts.environment_map),
                 "default_environment_template": self.callouts.default_environment_template,
@@ -560,6 +565,12 @@ class ConversionConfig:
             return self
         merged = _deep_merge(self.to_dict(), overrides)
         return ConversionConfig.from_dict(merged)
+
+
+def has_anchor_override(data: Mapping[str, Any]) -> bool:
+    """Check whether a config mapping already specifies headings.anchor_level."""
+    headings = data.get("headings")
+    return isinstance(headings, Mapping) and "anchor_level" in headings
 
 
 def _coerce_int_mapping(value: Any) -> dict[int, str]:

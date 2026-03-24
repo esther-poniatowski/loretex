@@ -30,10 +30,11 @@ def test_convert_spec_with_template(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    outputs = convert_spec(spec)
+    result = convert_spec(spec)
 
     assert (output_dir / "chapter.tex").exists()
     assert main_output.exists()
     main_text = main_output.read_text(encoding="utf-8")
     assert "\\input{chapter.tex}" in main_text
-    assert outputs == [output_dir / "chapter.tex"]
+    assert result.chapter_outputs == [output_dir / "chapter.tex"]
+    assert result.main_output == main_output

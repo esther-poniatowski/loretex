@@ -39,13 +39,14 @@ try:
 except PackageNotFoundError:
     __version__ = "0.0.0+unknown"
 
-from loretex.api import convert_file, convert_spec, convert_string
+from loretex.api import SpecResult, convert_file, convert_spec, convert_string
 from loretex.conversion import ConversionConfig, MarkdownToLaTeXConverter
 from loretex.parsers.markdown_converter import convert_markdown_to_latex
 
 __all__ = [
     "ConversionConfig",
     "MarkdownToLaTeXConverter",
+    "SpecResult",
     "__version__",
     "convert_file",
     "convert_markdown_to_latex",

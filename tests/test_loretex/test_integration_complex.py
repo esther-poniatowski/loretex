@@ -112,8 +112,8 @@ def test_complex_pipeline_to_pdf(tmp_path: Path) -> None:
         working_dir=working_dir,
     )
 
-    outputs = convert_spec(spec_path)
-    assert outputs, "Expected chapter outputs to be generated."
+    result = convert_spec(spec_path)
+    assert result.chapter_outputs, "Expected chapter outputs to be generated."
     assert main_output.exists()
 
     if not assets_ready:

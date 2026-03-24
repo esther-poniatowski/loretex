@@ -10,6 +10,4 @@ Modules
 -------
 loretex.utils.io
     Functions for file and specification I/O operations.
-loretex.utils.logging
-    Logging utilities for consistent diagnostic output formatting.
 """

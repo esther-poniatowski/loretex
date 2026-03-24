@@ -1,5 +1,9 @@
 """
 Registry for conversion transforms.
+
+The module-level ``_TRANSFORMS`` dict acts as the default global registry.
+Use :func:`clear_transforms` (or :func:`snapshot_transforms` /
+:func:`restore_transforms`) for test isolation and lifecycle control.
 """
 
 from __future__ import annotations
@@ -34,3 +38,30 @@ def list_transforms() -> list[str]:
 def resolve_transforms(names: Iterable[str]) -> list[Transform]:
     """Resolve names into transform callables."""
     return [get_transform(name) for name in names]
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle control (Fix 5)
+# ---------------------------------------------------------------------------
+
+
+def clear_transforms() -> None:
+    """Remove all registered transforms.
+
+    Useful in test teardown to prevent cross-test pollution.
+    """
+    _TRANSFORMS.clear()
+
+
+def snapshot_transforms() -> dict[str, Transform]:
+    """Return a shallow copy of the current registry.
+
+    Pair with :func:`restore_transforms` for save/restore semantics in tests.
+    """
+    return dict(_TRANSFORMS)
+
+
+def restore_transforms(snapshot: dict[str, Transform]) -> None:
+    """Replace the global registry with a previous snapshot."""
+    _TRANSFORMS.clear()
+    _TRANSFORMS.update(snapshot)

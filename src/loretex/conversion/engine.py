@@ -68,7 +68,12 @@ def convert_string(
     config: ConversionConfig | None = None,
     overrides: Mapping[str, object] | None = None,
 ) -> str:
-    """Convenience helper for converting Markdown to LaTeX."""
+    """Convenience helper for converting Markdown to LaTeX.
+
+    This is a thin wrapper that delegates to
+    :meth:`MarkdownToLaTeXConverter.convert_string`, the single authoritative
+    conversion path.  Prefer ``loretex.api.convert_string`` for new code.
+    """
     converter = MarkdownToLaTeXConverter(config=config)
     return converter.convert_string(source, overrides)
 
