@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the Loretex architecture, responsibilities, and interactions.
+This document describes how Loretex is structured and how its components interact.
 
 ## Overview
 

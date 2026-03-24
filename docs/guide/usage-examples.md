@@ -343,4 +343,4 @@ If an image is missing, a warning is emitted at conversion time.
 
 ## 20. Spec Validation Errors
 
-If required fields are missing, conversion raises a `SpecValidationError` with details.
+Missing required fields cause a `SpecValidationError` with details.

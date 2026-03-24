@@ -10,8 +10,8 @@ Notes:
 - `spec.yml` intentionally omits `output_dir`, `template`, and `main_output`.
   The test fills these dynamically so the fixture remains portable.
 - Assets are expected at `tests/fixtures/complex/assets/figs/diagram.pdf`.
-- The test writes outputs to a temporary working directory unless you run the
-  conversion manually.
+- The test writes outputs to a temporary working directory unless the
+  conversion runs manually.
 
 ## Running the Complex Integration Test
 

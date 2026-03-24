@@ -6,8 +6,7 @@
 [![Python](https://img.shields.io/badge/python-supported-blue)](https://www.python.org/)
 [![License: GPL](https://img.shields.io/badge/License-GPL-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
-Convert modular Markdown notes into structured LaTeX documents with declarative templates,
-customizable styles, and support for complex formatting.
+Markdown-to-LaTeX converter that assembles structured documents from modular notes.
 
 ---
 
@@ -28,43 +27,38 @@ customizable styles, and support for complex formatting.
 
 ### Motivation
 
-When redacting a complex document, Markdown is frequently used to draft and organize content due to
-its simplicity and readability, while LaTeX remains the preferred system for its precise typesetting
-and formatting capabilities.
-
-Existing tools for converting Markdown to LaTeX often lack support for complex document structures,
-hierarchical organization, and style customizations. As a result, manual adjustments are frequently
-required to ensure consistency and correctness in the final output.
+Markdown is commonly used to draft and organize content for its simplicity, while LaTeX remains
+the standard for precise typesetting. Existing converters lack support for complex document
+structures, hierarchical ordering, and custom styles, forcing manual adjustments in the final
+output.
 
 ### Advantages
 
-This tool provides a configurable pipeline to generate structured LaTeX documents from modular
-Markdown notes.
+Loretex converts Markdown notes to LaTeX through a configurable pipeline:
 
-It provides the following benefits:
-
-- **Separation of content and typesetting**: Enables authors to focus on semantic content authoring
-  in Markdown, while delegating formatting and compilation to configurable LaTeX templates.
-- **Declarative and reproducible document builds**: Eliminates manual editing by specifying the document structure and conversion rules in an external configuration file.
-- **Scalability to large projects**: Supports partial builds, hierarchical ordering, and modular
-  inclusion of chapters or sections, enabling progressive iteration on multi-stage writing processes.
-- **Advanced and customizable formatting**: Converts extended Markdown syntax into LaTeX with fine
-  control over rendering behavior.
+- **Content–typesetting separation**: Authors write in Markdown; LaTeX templates handle
+  formatting and compiling.
+- **Declarative builds**: An external configuration file specifies document structure and
+  conversion rules, eliminating manual editing.
+- **Scalable to large projects**: Supports partial builds, hierarchical ordering, and adding
+  chapters incrementally.
+- **Customizable formatting**: Converts extended Markdown syntax to LaTeX with fine control over
+  rendering behavior.
 
 ---
 
 ## Features
 
 - [x] **Modular document structure**: Generate standalone `.tex` files from individual or aggregated
-  Markdown notes, producing composable fragments for integration into a `main.tex` master file.
+  Markdown notes, producing composable fragments that integrate into a `main.tex` master file.
 
 - [x] **Declarative configurations**: Specify document structure, input and output paths, and
   optional conversion parameters in a static configuration file.
 
-- [x] **Fine-grained hierarchy mapping**: Map Markdown headings (`#`, `##`, etc) into LaTeX sections
-  (`\section{}`, `\subsection{}`, etc) using flexible, note-specific anchoring logic.
+- [x] **Precise hierarchy mapping**: Map Markdown headings (`#`, `##`, etc) into LaTeX sections
+  (`\section{}`, `\subsection{}`, etc) using flexible anchoring logic specific to each note.
 
-- **Formatting transformation**: Convert Markdown formatting into LaTeX equivalents, including:
+- **Formatting transforms**: Convert Markdown formatting into LaTeX equivalents, including:
 
   - [x] Emphasis (bold, italics)
   - [x] Code blocks and inline verbatim
@@ -84,25 +78,23 @@ It provides the following benefits:
 
 - [x] **Selective exclusions**: Omit specific Markdown content (e.g., YAML front matter) from the conversion output.
 
-- [x] **Batch or partial builds**: Process full documents or selected subsets of notes for targeted compilation and debugging.
+- [x] **Batch or partial builds**: Process full documents or selected subsets of notes to compile and debug specific targets.
 
 ---
 
 ## Installation
 
-To install the package and its dependencies, use one of the following methods:
+### Using pip
 
-### Using Pip
-
-Install the package from the GitHub repository URL via `pip`:
+Install from the GitHub repository:
 
 ```bash
 pip install git+https://github.com/esther-poniatowski/loretex.git
 ```
 
-### Using Conda
+### Using conda
 
-Install the package from the private channel eresthanaconda:
+Install from the eresthanaconda channel:
 
 ```bash
 conda install loretex -c eresthanaconda
@@ -181,7 +173,7 @@ An example template is available at `config/template.tex`.
 
 Additional placeholders supported: `{{title}}`, `{{author}}`, `{{date}}`, and `{{bibliography}}`.
 Title/author/date values are inserted already wrapped in braces for convenience (e.g. `\title{{title}}`).
-You can also provide custom placeholders via `template_vars` in the spec.
+Custom placeholders are also supported via `template_vars` in the spec.
 
 ### Programmatic Usage
 
@@ -226,7 +218,7 @@ conversion:
 
 #### Template Fonts and Callouts
 
-In the spec (top-level), you can configure document-level fonts and callout fonts:
+The spec supports font settings at the document level and for callouts:
 
 ```yaml
 document_font: "\\renewcommand{\\familydefault}{\\sfdefault}"
@@ -234,7 +226,7 @@ callout_title_font: "\\sffamily\\bfseries"
 callout_body_font: "\\sffamily"
 ```
 
-These placeholders are expected in your template (see `config/template.tex`).
+These placeholders are expected in the template (see `config/template.tex`).
 
 Loretex ships a default callouts style file and icons under `loretex/latex/`.
 Ensure `loretex-callouts.sty` and the `icons/` folder are available to LaTeX at
@@ -354,7 +346,7 @@ Key modules:
 Extension points:
 
 - AST transforms via registry (`register_transform`, `transform_names`).
-- Config-driven rules in `config/default.yaml`.
+- Rules driven by `config/default.yaml`.
 
 ## Support
 
