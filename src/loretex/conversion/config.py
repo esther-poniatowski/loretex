@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any, Mapping
 import warnings
@@ -26,6 +26,19 @@ def _deep_merge(base: Mapping[str, Any], override: Mapping[str, Any]) -> dict[st
         else:
             merged[key] = value
     return merged
+
+
+def _ensure_known_keys(
+    data: Mapping[str, Any],
+    *,
+    allowed: set[str],
+    context: str,
+    aliases: Mapping[str, str] | None = None,
+) -> None:
+    alias_keys = set((aliases or {}).keys())
+    unknown = sorted(key for key in data if key not in allowed and key not in alias_keys)
+    if unknown:
+        raise ValueError(f"Unknown {context} key(s): {', '.join(unknown)}")
 
 
 def _normalize_link_template(template: str) -> str:
@@ -308,6 +321,16 @@ class ConversionConfig:
     def from_dict(cls, data: Mapping[str, Any] | None) -> "ConversionConfig":
         if not data:
             return cls()
+        if not isinstance(data, Mapping):
+            raise TypeError("ConversionConfig data must be a mapping.")
+
+        section_aliases = {"list": "lists", "code-blocks": "code_blocks"}
+        _ensure_known_keys(
+            data,
+            allowed={field.name for field in fields(cls)},
+            aliases=section_aliases,
+            context="conversion",
+        )
 
         headings_data = data.get("headings", {})
         inline_data = data.get("inline", {})
@@ -323,6 +346,77 @@ class ConversionConfig:
         math_data = data.get("math", {})
         labels_data = data.get("labels", {})
         wiki_links_data = data.get("wiki_links", {})
+
+        _ensure_known_keys(
+            headings_data,
+            allowed={field.name for field in fields(HeadingConfig)},
+            context="headings",
+        )
+        _ensure_known_keys(
+            inline_data,
+            allowed={field.name for field in fields(InlineConfig)},
+            context="inline",
+        )
+        _ensure_known_keys(
+            links_data,
+            allowed={field.name for field in fields(LinkConfig)},
+            context="links",
+        )
+        _ensure_known_keys(
+            citations_data,
+            allowed={field.name for field in fields(CitationConfig)},
+            context="citations",
+        )
+        _ensure_known_keys(
+            footnotes_data,
+            allowed={field.name for field in fields(FootnoteConfig)},
+            context="footnotes",
+        )
+        _ensure_known_keys(
+            images_data,
+            allowed={field.name for field in fields(ImageConfig)},
+            context="images",
+        )
+        _ensure_known_keys(
+            lists_data,
+            allowed={field.name for field in fields(ListConfig)},
+            context="lists",
+        )
+        _ensure_known_keys(
+            code_blocks_data,
+            allowed={field.name for field in fields(CodeBlockConfig)},
+            context="code_blocks",
+        )
+        _ensure_known_keys(
+            callouts_data,
+            allowed={field.name for field in fields(CalloutConfig)},
+            context="callouts",
+        )
+        _ensure_known_keys(
+            tables_data,
+            allowed={field.name for field in fields(TableConfig)},
+            context="tables",
+        )
+        _ensure_known_keys(
+            parsing_data,
+            allowed={field.name for field in fields(ParsingConfig)},
+            context="parsing",
+        )
+        _ensure_known_keys(
+            math_data,
+            allowed={field.name for field in fields(MathConfig)},
+            context="math",
+        )
+        _ensure_known_keys(
+            labels_data,
+            allowed={field.name for field in fields(LabelConfig)},
+            context="labels",
+        )
+        _ensure_known_keys(
+            wiki_links_data,
+            allowed={field.name for field in fields(WikiLinkConfig)},
+            context="wiki_links",
+        )
 
         headings = HeadingConfig(
             anchor_level=int(headings_data.get("anchor_level", 1)),

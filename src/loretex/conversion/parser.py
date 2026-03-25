@@ -175,6 +175,8 @@ class MarkdownParser:
             else:
                 content_lines.append(normalized_line)
             i += 1
+        else:
+            raise InvalidCodeFenceError(start_idx + 1, lines[start_idx])
 
         return CodeBlock(language=language, content="\n".join(content_lines)), i - start_idx
 

@@ -15,7 +15,9 @@ from .exceptions import (
 from .generator import LaTeXGenerator
 from .inline import InlineTransformer
 from .registry import (
+    TransformRegistry,
     clear_transforms,
+    get_default_registry,
     get_transform,
     list_transforms,
     register_transform,
@@ -69,9 +71,11 @@ __all__ = [
     "Section",
     "Table",
     "Transform",
+    "TransformRegistry",
     "apply_transforms",
     "clear_transforms",
     "convert_string",
+    "get_default_registry",
     "get_transform",
     "has_anchor_override",
     "list_transforms",

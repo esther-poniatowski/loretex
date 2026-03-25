@@ -16,7 +16,6 @@ from loretex.config.params import (
     DEFAULT_DOCUMENT_FONT,
     SpecParams,
 )
-from loretex.config.validate import validate_spec
 from loretex.conversion import ConversionConfig, MarkdownToLaTeXConverter
 from loretex.conversion.config import has_anchor_override
 from loretex.pipeline import AssemblyPlan, assemble
@@ -98,10 +97,11 @@ def convert_spec(spec_input: Path | dict) -> SpecResult:
     """
     if isinstance(spec_input, dict):
         spec = spec_input
+        base_dir = None
     else:
         spec = load_yaml_spec(spec_input) or {}
-    validate_spec(spec)
-    params = SpecParams.from_spec(spec)
+        base_dir = Path(spec_input).resolve().parent
+    params = SpecParams.from_spec(spec, base_dir=base_dir)
 
     # Layer 1 — pure orchestration (no I/O)
     converted = _convert_chapters(params)
@@ -145,6 +145,7 @@ def _write_chapters(
     ensure_output_dir(params.output_dir)
     outputs: list[Path] = []
     for tex_path, latex_text in converted:
+        tex_path.parent.mkdir(parents=True, exist_ok=True)
         tex_path.write_text(latex_text, encoding="utf-8")
         outputs.append(tex_path)
     return outputs

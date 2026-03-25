@@ -8,7 +8,7 @@ from .config import ConversionConfig
 from .generator import LaTeXGenerator
 from .inline import InlineTransformer
 from .parser import MarkdownParser
-from .registry import resolve_transforms
+from .registry import TransformRegistry, get_default_registry, resolve_transforms
 from .transforms import Transform, apply_transforms
 
 
@@ -22,13 +22,18 @@ class MarkdownToLaTeXConverter:
         config: ConversionConfig | None = None,
         transforms: list[Transform] | None = None,
         transform_names: list[str] | None = None,
+        transform_registry: TransformRegistry | None = None,
     ) -> None:
         self._config = config or ConversionConfig()
         self._parser = parser or MarkdownParser()
         self._generator = generator or LaTeXGenerator(self._config)
+        self._transform_registry = transform_registry or get_default_registry()
         self._transforms = transforms or []
         if transform_names:
-            self._transforms = [*self._transforms, *resolve_transforms(transform_names)]
+            self._transforms = [
+                *self._transforms,
+                *self._transform_registry.resolve(transform_names),
+            ]
 
     def convert_string(self, source: str, overrides: Mapping[str, object] | None = None) -> str:
         """Convert Markdown string to LaTeX.
