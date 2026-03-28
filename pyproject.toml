@@ -18,7 +18,7 @@ authors = [{name = "Esther Poniatowski", email = "esther.poniatowski@ens.psl.eu"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = {file = "README.md", content-type = "text/markdown"}
-description = "Converter between Markdown notes and LaTeX files"
+description = "Converts modular Markdown notes into structured LaTeX documents."
 keywords = ["markdown", "latex", "converter"]
 classifiers = [
     "Programming Language :: Python :: 3",

@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-supported-blue)](https://www.python.org/)
 [![License: GPL](https://img.shields.io/badge/License-GPL-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
-Markdown-to-LaTeX converter that assembles structured documents from modular notes.
+Converts modular Markdown notes into structured LaTeX documents.
 
 ---
 
