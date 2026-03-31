@@ -3,7 +3,10 @@
 ```{toctree}
 :maxdepth: 2
 
-usage-examples
+installation
+usage
+cli-reference
+configuration
 development
 release-checklist
 ```

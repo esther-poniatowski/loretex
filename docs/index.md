@@ -1,12 +1,15 @@
-# Loretex Documentation
+# Loretex
 
-Converter between Markdown notes and LaTeX files.
+Converts modular Markdown notes into structured LaTeX documents.
 
 ```{toctree}
 :maxdepth: 2
 :caption: User Guide
 
-guide/usage-examples
+guide/installation
+guide/usage
+guide/cli-reference
+guide/configuration
 guide/development
 guide/release-checklist
 ```
