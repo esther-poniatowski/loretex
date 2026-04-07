@@ -18,7 +18,7 @@ guide/release-checklist
 :maxdepth: 2
 :caption: Reference
 
-architecture
+internals/index
 api/index
 ```
 
