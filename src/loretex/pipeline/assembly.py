@@ -34,14 +34,17 @@ def build_inputs(chapter_outputs: list[Path], *, main_output: Path) -> str:
     return "\n".join(lines)
 
 
-def assemble(plan: AssemblyPlan) -> Path:
-    """
-    Assemble a main.tex file using the template and chapter outputs.
-    """
+def render_assembly(plan: AssemblyPlan) -> str:
+    """Render an assembly plan without writing its target file."""
     template_text = load_template(plan.template_path)
     inputs = build_inputs(plan.chapter_outputs, main_output=plan.main_output)
     context = TemplateContext(content=inputs, values=plan.template_vars)
-    rendered = render_template(template_text, context)
+    return render_template(template_text, context)
+
+
+def assemble(plan: AssemblyPlan) -> Path:
+    """Assemble and write a main LaTeX file."""
+    rendered = render_assembly(plan)
     plan.main_output.parent.mkdir(parents=True, exist_ok=True)
     plan.main_output.write_text(rendered, encoding="utf-8")
     return plan.main_output

@@ -107,6 +107,7 @@ class MathBlock(Node):
     """Block math expression."""
 
     content: str
+    label: str | None = None
 
     def accept(self, visitor: NodeVisitor) -> str:
         return visitor.visit_math_block(self)

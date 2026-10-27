@@ -81,9 +81,10 @@ def convert(
         Conversion engine used to convert Markdown text to LaTeX format.
     """
 
-    spec_data = load_yaml_spec(spec_path) or {}
-    result = api_convert_spec(spec_data)
+    result = api_convert_spec(spec_path)
     for output in result.chapter_outputs:
+        typer.echo(f"[SUCCESS] Generated {output}")
+    for output in result.auxiliary_outputs:
         typer.echo(f"[SUCCESS] Generated {output}")
     if result.main_output is not None:
         typer.echo(f"[SUCCESS] Generated {result.main_output.name}")

@@ -1,6 +1,6 @@
 """Pipeline utilities for loretex document assembly."""
 
-from .assembly import AssemblyPlan, assemble
+from .assembly import AssemblyPlan, assemble, render_assembly
 from .templates import TemplateContext, load_template, render_template
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
     "assemble",
     "load_template",
     "render_template",
+    "render_assembly",
 ]

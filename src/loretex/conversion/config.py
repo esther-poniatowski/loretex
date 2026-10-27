@@ -60,6 +60,8 @@ class HeadingConfig:
     anchor_level: int = 1
     commands: Mapping[int, str] = field(default_factory=lambda: dict(DEFAULT_SECTION_COMMANDS))
     fallback_command: str = "paragraph"
+    environments: Mapping[str, str] = field(default_factory=dict)
+    emit_first: bool = True
 
     def resolve_command(self, markdown_level: int) -> str:
         """Resolve Markdown heading level to a LaTeX command."""
@@ -110,6 +112,19 @@ class LinkConfig:
 
     def format_internal(self, label: str) -> str:
         template = _normalize_link_template(self.internal_ref_template)
+        return template.format(label=label)
+
+
+@dataclass(frozen=True)
+class CrossReferenceConfig:
+    """Direct target tokens rendered as LaTeX cross-references."""
+
+    prefixes: tuple[str, ...] = ()
+    template: str = r"\ref{{{label}}}"
+
+    def format(self, label: str) -> str:
+        """Render one full target label, including its configured prefix."""
+        template = _normalize_link_template(self.template)
         return template.format(label=label)
 
 
@@ -193,6 +208,14 @@ class CodeBlockConfig:
 
     environment: str = "lstlisting"
     options_template: str | None = None
+    passthrough_languages: tuple[str, ...] = ()
+
+    def is_passthrough(self, language: str | None) -> bool:
+        """Return whether a fenced language passes through without a wrapper."""
+        if language is None:
+            return False
+        selected = {value.casefold() for value in self.passthrough_languages}
+        return language.casefold() in selected
 
     def begin(self, language: str | None) -> str:
         if not self.options_template:
@@ -263,8 +286,12 @@ class MathConfig:
     """Math conversion rules."""
 
     block_style: str = "dollars"  # dollars or brackets
+    label_template: str = r"\label{{{label}}}"
 
-    def format_block(self, content: str) -> str:
+    def format_block(self, content: str, label: str | None = None) -> str:
+        if label is not None:
+            rendered_label = self.label_template.format(label=label)
+            return f"\\begin{{equation}}{rendered_label}\n{content}\n\\end{{equation}}"
         if self.block_style == "brackets":
             return f"\\[{content}\\]"
         return f"$${content}$$"
@@ -304,6 +331,7 @@ class ConversionConfig:
     headings: HeadingConfig = field(default_factory=HeadingConfig)
     inline: InlineConfig = field(default_factory=InlineConfig)
     links: LinkConfig = field(default_factory=LinkConfig)
+    cross_references: CrossReferenceConfig = field(default_factory=CrossReferenceConfig)
     citations: CitationConfig = field(default_factory=CitationConfig)
     footnotes: FootnoteConfig = field(default_factory=FootnoteConfig)
     images: ImageConfig = field(default_factory=ImageConfig)
@@ -335,6 +363,7 @@ class ConversionConfig:
         headings_data = data.get("headings", {})
         inline_data = data.get("inline", {})
         links_data = data.get("links", {})
+        cross_references_data = data.get("cross_references", {})
         citations_data = data.get("citations", {})
         footnotes_data = data.get("footnotes", {})
         images_data = data.get("images", {})
@@ -361,6 +390,11 @@ class ConversionConfig:
             links_data,
             allowed={field.name for field in fields(LinkConfig)},
             context="links",
+        )
+        _ensure_known_keys(
+            cross_references_data,
+            allowed={field.name for field in fields(CrossReferenceConfig)},
+            context="cross_references",
         )
         _ensure_known_keys(
             citations_data,
@@ -422,6 +456,8 @@ class ConversionConfig:
             anchor_level=int(headings_data.get("anchor_level", 1)),
             commands=_coerce_int_mapping(headings_data.get("commands")),
             fallback_command=str(headings_data.get("fallback_command", "paragraph")),
+            environments=_coerce_str_mapping(headings_data.get("environments")),
+            emit_first=bool(headings_data.get("emit_first", True)),
         )
 
         inline = InlineConfig(
@@ -455,6 +491,13 @@ class ConversionConfig:
             ),
             internal_ref_template=str(
                 links_data.get("internal_ref_template", r"\ref{{{label}}}")
+            ),
+        )
+
+        cross_references = CrossReferenceConfig(
+            prefixes=_coerce_str_sequence(cross_references_data.get("prefixes")),
+            template=str(
+                cross_references_data.get("template", r"\ref{{{label}}}")
             ),
         )
 
@@ -503,6 +546,9 @@ class ConversionConfig:
         code_blocks = CodeBlockConfig(
             environment=str(code_blocks_data.get("environment", "lstlisting")),
             options_template=code_blocks_data.get("options_template"),
+            passthrough_languages=_coerce_str_sequence(
+                code_blocks_data.get("passthrough_languages")
+            ),
         )
 
         hr_data = data.get("horizontal_rule", r"\hrule")
@@ -532,6 +578,7 @@ class ConversionConfig:
             headings=headings,
             inline=inline,
             links=links,
+            cross_references=cross_references,
             citations=citations,
             footnotes=footnotes,
             images=images,
@@ -546,7 +593,10 @@ class ConversionConfig:
                 )
             ),
             math=MathConfig(
-                block_style=str(math_data.get("block_style", "dollars"))
+                block_style=str(math_data.get("block_style", "dollars")),
+                label_template=str(
+                    math_data.get("label_template", r"\label{{{label}}}")
+                ),
             ),
             labels=LabelConfig(
                 auto_label_headings=bool(
@@ -577,6 +627,8 @@ class ConversionConfig:
                 "anchor_level": self.headings.anchor_level,
                 "commands": dict(self.headings.commands),
                 "fallback_command": self.headings.fallback_command,
+                "environments": dict(self.headings.environments),
+                "emit_first": self.headings.emit_first,
             },
             "inline": {
                 "bold_command": self.inline.bold_command,
@@ -593,6 +645,10 @@ class ConversionConfig:
                 "url_only_template": self.links.url_only_template,
                 "autolink_template": self.links.autolink_template,
                 "internal_ref_template": self.links.internal_ref_template,
+            },
+            "cross_references": {
+                "prefixes": list(self.cross_references.prefixes),
+                "template": self.cross_references.template,
             },
             "citations": {
                 "cite_template": self.citations.cite_template,
@@ -619,6 +675,9 @@ class ConversionConfig:
             "code_blocks": {
                 "environment": self.code_blocks.environment,
                 "options_template": self.code_blocks.options_template,
+                "passthrough_languages": list(
+                    self.code_blocks.passthrough_languages
+                ),
             },
             "horizontal_rule": {
                 "template": self.horizontal_rule.template,
@@ -640,6 +699,7 @@ class ConversionConfig:
             },
             "math": {
                 "block_style": self.math.block_style,
+                "label_template": self.math.label_template,
             },
             "labels": {
                 "auto_label_headings": self.labels.auto_label_headings,
@@ -681,3 +741,13 @@ def _coerce_str_mapping(value: Any) -> dict[str, str]:
     if not isinstance(value, Mapping):
         raise TypeError("Expected mapping for environment maps")
     return {str(key): str(val) for key, val in value.items()}
+
+
+def _coerce_str_sequence(value: Any) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, (list, tuple)) or not all(
+        isinstance(item, str) for item in value
+    ):
+        raise TypeError("Expected a sequence of strings")
+    return tuple(value)

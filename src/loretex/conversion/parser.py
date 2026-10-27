@@ -11,6 +11,7 @@ from .exceptions import (
     InvalidHeadingError,
     InvalidImageError,
     InvalidListError,
+    InvalidMathBlockError,
 )
 from .nodes import (
     Callout,
@@ -48,6 +49,9 @@ class MarkdownParser:
     _table_row_pattern = re.compile(r"^\|(.+)\|$")
     _table_separator_pattern = re.compile(r"^\|[\s:|-]+\|$")
     _horizontal_rule_pattern = re.compile(r"^[ \t]*([-*_])(?:[ \t]*\1){2,}[ \t]*$")
+    _math_fence_end_pattern = re.compile(
+        r"^(?P<delimiter>\$\$|\\\])(?:\s+\{#(?P<label>[A-Za-z0-9:_-]+)\})?\s*$"
+    )
 
     def parse(self, source: str) -> Document:
         """Parse Markdown source into AST.
@@ -189,12 +193,19 @@ class MarkdownParser:
             i = start_idx + 1
             while i < len(lines):
                 line = self._normalized_line(lines[i]).strip()
-                if line == end_delimiter:
+                end_match = self._math_fence_end_pattern.match(line)
+                if end_match and end_match.group("delimiter") == end_delimiter:
                     i += 1
-                    break
+                    return (
+                        MathBlock(
+                            content="\n".join(content_lines),
+                            label=end_match.group("label"),
+                        ),
+                        i - start_idx,
+                    )
                 content_lines.append(self._normalized_line(lines[i]))
                 i += 1
-            return MathBlock(content="\n".join(content_lines)), i - start_idx
+            raise InvalidMathBlockError(start_idx + 1, lines[start_idx])
 
         if start_line.startswith("$$") and start_line.endswith("$$") and len(start_line) > 4:
             content = start_line[2:-2].strip()

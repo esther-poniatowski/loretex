@@ -35,6 +35,14 @@ class InlineTransformer:
     ) -> None:
         self._config = config or ConversionConfig()
         self._footnotes_map = footnotes_map or {}
+        prefixes = "|".join(
+            re.escape(prefix) for prefix in self._config.cross_references.prefixes
+        )
+        self._cross_reference_pattern = (
+            re.compile(rf"(?<![A-Za-z0-9_@])@((?:{prefixes}):[A-Za-z0-9:_-]+)")
+            if prefixes
+            else None
+        )
 
     def convert(self, text: str) -> str:
         """Convert inline Markdown syntax to LaTeX.
@@ -74,6 +82,11 @@ class InlineTransformer:
             lambda match: self._format_citation(match.group(1)),
             text,
         )
+        if self._cross_reference_pattern is not None:
+            text = self._cross_reference_pattern.sub(
+                lambda match: self._config.cross_references.format(match.group(1)),
+                text,
+            )
         text = self._footnote_ref_pattern.sub(
             lambda match: self._format_footnote_ref(match.group(1)),
             text,

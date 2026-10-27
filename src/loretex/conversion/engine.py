@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Mapping
 
 from .config import ConversionConfig
 from .generator import LaTeXGenerator
 from .inline import InlineTransformer
+from .nodes import Section
 from .parser import MarkdownParser
 from .registry import TransformRegistry, get_default_registry, resolve_transforms
 from .transforms import Transform, apply_transforms
+
+
+@dataclass(frozen=True)
+class ConversionResult:
+    """Rendered body and first-heading metadata from one parsed document."""
+
+    latex: str
+    first_heading: str | None
 
 
 class MarkdownToLaTeXConverter:
@@ -50,6 +60,14 @@ class MarkdownToLaTeXConverter:
         str
             Converted LaTeX.
         """
+        return self.convert_result(source, overrides).latex
+
+    def convert_result(
+        self,
+        source: str,
+        overrides: Mapping[str, object] | None = None,
+    ) -> ConversionResult:
+        """Convert source once and return its body with rendered heading metadata."""
         if overrides:
             config = self._config.with_overrides(overrides)
         else:
@@ -65,7 +83,19 @@ class MarkdownToLaTeXConverter:
         ast = self._parser.parse(source)
         if self._transforms:
             ast = apply_transforms(ast, self._transforms)
-        return ast.accept(generator)
+        first_section = next(
+            (child for child in ast.children if isinstance(child, Section)),
+            None,
+        )
+        first_heading = (
+            generator.render_inline(first_section.title)
+            if first_section is not None
+            else None
+        )
+        return ConversionResult(
+            latex=ast.accept(generator),
+            first_heading=first_heading,
+        )
 
 
 def convert_string(

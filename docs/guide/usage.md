@@ -73,6 +73,7 @@ Each entry in `chapters` accepts:
 | `file` | `str` | Required | Path to the source Markdown file. |
 | `anchor_level` | `int` | spec-level `anchor_level` | Heading level mapped to `\section{}` for this chapter. |
 | `output` | `str` | derived from `file` | Custom output path relative to `output_dir`. When omitted, the output filename mirrors the source path with a `.tex` extension. |
+| `title` | `map` | none | Declares an auxiliary title file through required `output` and `template` fields. The template must contain `{title}`. |
 | `conversion` | `map` | `{}` | Per-chapter conversion rule overrides (same schema as the spec-level `conversion` block). Aliases: `options`, `rules`. |
 
 ```yaml
@@ -80,6 +81,9 @@ chapters:
   - file: notes/intro.md
     anchor_level: 2
     output: intro.tex
+    title:
+      output: intro-title.tex
+      template: "\\title{{{title}}}\n"
     conversion:
       headings:
         anchor_level: 2
@@ -87,6 +91,15 @@ chapters:
         environment_map:
           note: notebox
 ```
+
+Title files are auxiliary outputs. Template assembly adds only chapter outputs to
+the generated `\input{...}` sequence.
+
+Loretex converts every chapter and renders every declared output before changing a
+target file. Therefore, a conversion or template-rendering failure preserves the
+previous output files. Loretex also rejects duplicate target paths before writing.
+Filesystem replacement remains one operation per target; the output set is not a
+multi-file filesystem transaction.
 
 ## Template Assembly
 

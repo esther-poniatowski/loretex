@@ -7,7 +7,10 @@ This module exposes simple, stable entry points for common conversion workflows.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
+import stat
+import tempfile
 from typing import Mapping
 
 from loretex.config.params import (
@@ -16,10 +19,10 @@ from loretex.config.params import (
     DEFAULT_DOCUMENT_FONT,
     SpecParams,
 )
-from loretex.conversion import ConversionConfig, MarkdownToLaTeXConverter
+from loretex.conversion import ConversionConfig, ConversionError, MarkdownToLaTeXConverter
 from loretex.conversion.config import has_anchor_override
-from loretex.pipeline import AssemblyPlan, assemble
-from loretex.utils.io import ensure_output_dir, load_yaml_spec
+from loretex.pipeline import AssemblyPlan, render_assembly
+from loretex.utils.io import load_yaml_spec
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +81,16 @@ class SpecResult:
     """Result of a spec-based batch conversion."""
 
     chapter_outputs: list[Path]
+    auxiliary_outputs: list[Path]
     main_output: Path | None
+
+
+@dataclass(frozen=True)
+class PlannedOutput:
+    """One fully rendered file awaiting its filesystem write."""
+
+    path: Path
+    text: str
 
 
 def convert_spec(spec_input: Path | dict) -> SpecResult:
@@ -103,23 +115,22 @@ def convert_spec(spec_input: Path | dict) -> SpecResult:
         base_dir = Path(spec_input).resolve().parent
     params = SpecParams.from_spec(spec, base_dir=base_dir)
 
-    # Layer 1 — pure orchestration (no I/O)
-    converted = _convert_chapters(params)
+    planned, chapter_outputs, auxiliary_outputs = _convert_chapters(params)
+    main_output = _plan_main(params, chapter_outputs, planned)
+    _validate_unique_outputs(planned)
+    _write_outputs(planned)
 
-    # Layer 3 — I/O: write results to disk
-    chapter_outputs = _write_chapters(params, converted)
-
-    # Optional assembly
-    main_output = _maybe_assemble_main(params, chapter_outputs)
-
-    return SpecResult(chapter_outputs=chapter_outputs, main_output=main_output)
+    return SpecResult(
+        chapter_outputs=chapter_outputs,
+        auxiliary_outputs=auxiliary_outputs,
+        main_output=main_output,
+    )
 
 
-def _convert_chapters(params: SpecParams) -> list[tuple[Path, str]]:
-    """Layer 1: pure orchestration — convert every chapter and return pairs.
-
-    Returns a list of ``(output_path, latex_text)`` without performing any I/O.
-    """
+def _convert_chapters(
+    params: SpecParams,
+) -> tuple[list[PlannedOutput], list[Path], list[Path]]:
+    """Render every chapter and title fragment without changing output files."""
     base_config = ConversionConfig.from_dict(params.conversion)
     if not has_anchor_override(params.conversion):
         base_config = base_config.with_overrides(
@@ -127,28 +138,70 @@ def _convert_chapters(params: SpecParams) -> list[tuple[Path, str]]:
         )
     converter = MarkdownToLaTeXConverter(config=base_config)
 
-    results: list[tuple[Path, str]] = []
+    planned: list[PlannedOutput] = []
+    chapter_outputs: list[Path] = []
+    auxiliary_outputs: list[Path] = []
     for chapter in params.chapters:
         markdown_text = chapter.md_path.read_text(encoding="utf-8")
         overrides = chapter.options or {}
         if chapter.local_anchor is not None and not has_anchor_override(overrides):
             overrides = _apply_anchor_override(overrides, chapter.local_anchor)
-        latex_text = converter.convert_string(markdown_text, overrides)
-        results.append((chapter.tex_output, latex_text))
-    return results
+        result = converter.convert_result(markdown_text, overrides)
+        planned.append(PlannedOutput(chapter.tex_output, result.latex))
+        chapter_outputs.append(chapter.tex_output)
+        if chapter.title is not None:
+            if result.first_heading is None:
+                raise ConversionError(
+                    f"{chapter.md_path}: a declared title output requires a heading"
+                )
+            try:
+                title_text = chapter.title.template.format(title=result.first_heading)
+            except (KeyError, ValueError) as error:
+                raise ConversionError(
+                    f"{chapter.md_path}: invalid title template: {error}"
+                ) from error
+            planned.append(PlannedOutput(chapter.title.output, title_text))
+            auxiliary_outputs.append(chapter.title.output)
+    return planned, chapter_outputs, auxiliary_outputs
 
 
-def _write_chapters(
-    params: SpecParams, converted: list[tuple[Path, str]]
-) -> list[Path]:
-    """Layer 3: I/O — write converted chapters to disk."""
-    ensure_output_dir(params.output_dir)
-    outputs: list[Path] = []
-    for tex_path, latex_text in converted:
-        tex_path.parent.mkdir(parents=True, exist_ok=True)
-        tex_path.write_text(latex_text, encoding="utf-8")
-        outputs.append(tex_path)
-    return outputs
+def _write_outputs(planned: list[PlannedOutput]) -> None:
+    """Stage every output beside its target, then replace the declared files."""
+    staged: list[tuple[Path, Path]] = []
+    try:
+        for output in planned:
+            output.path.parent.mkdir(parents=True, exist_ok=True)
+            output_mode = (
+                stat.S_IMODE(output.path.stat().st_mode)
+                if output.path.exists()
+                else 0o644
+            )
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=output.path.parent,
+                prefix=f".{output.path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as handle:
+                handle.write(output.text)
+                os.chmod(handle.name, output_mode)
+                staged.append((Path(handle.name), output.path))
+        for temporary, target in staged:
+            os.replace(temporary, target)
+    finally:
+        for temporary, _target in staged:
+            temporary.unlink(missing_ok=True)
+
+
+def _validate_unique_outputs(planned: list[PlannedOutput]) -> None:
+    """Reject output plans whose declared targets overlap."""
+    seen: set[Path] = set()
+    for output in planned:
+        target = output.path.resolve()
+        if target in seen:
+            raise ConversionError(f"duplicate output path: {output.path}")
+        seen.add(target)
 
 
 def _build_template_vars(params: SpecParams) -> dict[str, str]:
@@ -179,19 +232,24 @@ def _build_template_vars(params: SpecParams) -> dict[str, str]:
     return template_vars
 
 
-def _maybe_assemble_main(params: SpecParams, outputs: list[Path]) -> Path | None:
+def _plan_main(
+    params: SpecParams,
+    chapter_outputs: list[Path],
+    planned: list[PlannedOutput],
+) -> Path | None:
     if params.template_path is None:
         return None
     main_output = params.main_output or (params.output_dir / "main.tex")
     template_vars = _build_template_vars(params)
     plan = AssemblyPlan(
         output_dir=params.output_dir,
-        chapter_outputs=outputs,
+        chapter_outputs=chapter_outputs,
         template_path=params.template_path,
         main_output=main_output,
         template_vars=template_vars,
     )
-    return assemble(plan)
+    planned.append(PlannedOutput(main_output, render_assembly(plan)))
+    return main_output
 
 
 # ---------------------------------------------------------------------------

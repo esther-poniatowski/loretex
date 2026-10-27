@@ -1,7 +1,7 @@
 """Conversion engine public API."""
 
 from .config import ConversionConfig, has_anchor_override
-from .engine import MarkdownToLaTeXConverter, convert_string
+from .engine import ConversionResult, MarkdownToLaTeXConverter, convert_string
 from .exceptions import (
     ConversionError,
     InvalidCalloutError,
@@ -9,6 +9,7 @@ from .exceptions import (
     InvalidHeadingError,
     InvalidImageError,
     InvalidListError,
+    InvalidMathBlockError,
     LoretexError,
     ParsingError,
 )
@@ -48,6 +49,7 @@ __all__ = [
     "CodeBlock",
     "ConversionConfig",
     "ConversionError",
+    "ConversionResult",
     "Document",
     "HorizontalRule",
     "Image",
@@ -57,6 +59,7 @@ __all__ = [
     "InvalidHeadingError",
     "InvalidImageError",
     "InvalidListError",
+    "InvalidMathBlockError",
     "LaTeXGenerator",
     "List",
     "ListItem",

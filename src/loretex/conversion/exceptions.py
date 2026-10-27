@@ -59,6 +59,17 @@ class InvalidCodeFenceError(ParsingError):
         )
 
 
+class InvalidMathBlockError(ParsingError):
+    """Raised when a display-math block has no closing delimiter."""
+
+    def __init__(self, line: int, content: str) -> None:
+        super().__init__(
+            f"Invalid display-math block at line {line}: {content!r}",
+            line=line,
+            content=content,
+        )
+
+
 class InvalidCalloutError(ParsingError):
     """Raised when a callout header is malformed."""
 

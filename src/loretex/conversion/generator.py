@@ -36,9 +36,41 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_document(self, node: Document) -> str:
         """Generate LaTeX for the full document."""
-        blocks = [child.accept(self) for child in node.children if child]
-        blocks = [block for block in blocks if block.strip() != ""]
+        blocks: list[str] = []
+        active_environment: str | None = None
+        first_heading_seen = False
+
+        for child in node.children:
+            closes_environment = isinstance(child, Section) or (
+                isinstance(child, CodeBlock)
+                and self._config.code_blocks.is_passthrough(child.language)
+            )
+            if active_environment and closes_environment:
+                blocks.append(f"\\end{{{active_environment}}}")
+                active_environment = None
+
+            if isinstance(child, Section):
+                is_first = not first_heading_seen
+                first_heading_seen = True
+                environment = self._config.headings.environments.get(child.title)
+                if environment:
+                    blocks.append(f"\\begin{{{environment}}}")
+                    active_environment = environment
+                    continue
+                if is_first and not self._config.headings.emit_first:
+                    continue
+
+            block = child.accept(self)
+            if block.strip() != "":
+                blocks.append(block)
+
+        if active_environment:
+            blocks.append(f"\\end{{{active_environment}}}")
         return "\n\n".join(blocks)
+
+    def render_inline(self, text: str) -> str:
+        """Render inline Markdown under the generator's effective configuration."""
+        return self._inline.convert(text)
 
     def visit_section(self, node: Section) -> str:
         """Convert heading to LaTeX sectioning command."""
@@ -104,6 +136,8 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_code_block(self, node: CodeBlock) -> str:
         """Convert fenced code block to configured environment."""
+        if self._config.code_blocks.is_passthrough(node.language):
+            return node.content
         begin = self._config.code_blocks.begin(node.language)
         end = self._config.code_blocks.end()
         return f"{begin}\n{node.content}\n{end}"
@@ -114,7 +148,7 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_math_block(self, node: MathBlock) -> str:
         """Convert block math to configured LaTeX."""
-        return self._config.math.format_block(node.content)
+        return self._config.math.format_block(node.content, node.label)
 
     def visit_callout(self, node: Callout) -> str:
         """Convert callout to custom LaTeX environment."""

@@ -36,6 +36,14 @@ DEFAULT_CALLOUT_BODY_FONT: str = r"\sffamily"
 
 
 @attr.s(auto_attribs=True, frozen=True)
+class TitleOutput:
+    """Declared title fragment derived from a chapter's first heading."""
+
+    output: Path
+    template: str
+
+
+@attr.s(auto_attribs=True, frozen=True)
 class Chapter:
     """
     Structured representation of a single Markdown-to-LaTeX conversion unit.
@@ -50,6 +58,8 @@ class Chapter:
         Heading level to be mapped to `\\section{}` in LaTeX.
     options : dict
         Conversion rule overrides for this chapter.
+    title : TitleOutput | None
+        Optional title fragment written apart from the chapter body.
 
     Methods
     -------
@@ -61,6 +71,7 @@ class Chapter:
     tex_output: Path
     local_anchor: int
     options: dict
+    title: TitleOutput | None
 
     @classmethod
     def from_dict(
@@ -92,7 +103,15 @@ class Chapter:
             raise SpecValidationError("Chapter entries must be dictionaries.")
         if "file" not in chapter_dict or not isinstance(chapter_dict["file"], str):
             raise SpecValidationError("Each chapter requires a string 'file' path.")
-        allowed_keys = {"file", "anchor_level", "conversion", "options", "rules", "output"}
+        allowed_keys = {
+            "file",
+            "anchor_level",
+            "conversion",
+            "options",
+            "rules",
+            "output",
+            "title",
+        }
         unknown = sorted(key for key in chapter_dict if key not in allowed_keys)
         if unknown:
             raise SpecValidationError(f"Unknown chapter key(s): {', '.join(unknown)}")
@@ -119,11 +138,38 @@ class Chapter:
             if output_ref is not None
             else output_dir / _default_output_relpath(source_ref)
         )
+        title_data = chapter_dict.get("title")
+        title = None
+        if title_data is not None:
+            if not isinstance(title_data, dict):
+                raise SpecValidationError("Chapter title must be a mapping.")
+            unknown_title_keys = sorted(
+                key for key in title_data if key not in {"output", "template"}
+            )
+            if unknown_title_keys:
+                raise SpecValidationError(
+                    f"Unknown chapter title key(s): {', '.join(unknown_title_keys)}"
+                )
+            title_output = title_data.get("output")
+            title_template = title_data.get("template")
+            if not isinstance(title_output, str) or not isinstance(title_template, str):
+                raise SpecValidationError(
+                    "Chapter title requires string output and template fields."
+                )
+            if "{title}" not in title_template:
+                raise SpecValidationError(
+                    "Chapter title template must contain the {title} placeholder."
+                )
+            title = TitleOutput(
+                output=_resolve_output_path(Path(title_output), output_dir),
+                template=title_template,
+            )
         return cls(
             md_path=md,
             tex_output=tex_output,
             local_anchor=local_anchor,
-            options=options
+            options=options,
+            title=title,
         )
 
 

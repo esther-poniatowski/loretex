@@ -6,7 +6,7 @@ Loretex reads conversion rules from the `conversion` block of a YAML spec file.
 Defaults are defined in the Python dataclass `ConversionConfig`
 (`src/loretex/conversion/config.py`). Spec-level values override those defaults.
 
-The `conversion` block contains 15 sub-sections, each controlling one aspect of the
+The `conversion` block contains 16 sub-sections, each controlling one aspect of the
 Markdown-to-LaTeX pipeline. All sub-sections and keys are optional; omitted keys
 fall back to built-in defaults.
 
@@ -31,6 +31,8 @@ Controls how Markdown heading levels map to LaTeX section commands.
 | `anchor_level` | `int` | `1` | Markdown heading level mapped to `\section{}`. |
 | `commands` | `map[int, str]` | `{1: section, 2: subsection, 3: subsubsection, 4: paragraph}` | Mapping from *relative* heading level to LaTeX command name. |
 | `fallback_command` | `str` | `"paragraph"` | LaTeX command for heading levels beyond the `commands` map. |
+| `environments` | `map[str, str]` | `{}` | Heading text mapped to a LaTeX environment name. |
+| `emit_first` | `bool` | `true` | Whether the first heading appears in the body output. |
 
 A heading at `anchor_level` receives relative level 1 and maps to `commands[1]`
 (default `\section{}`). Each deeper level increments the relative level.
@@ -44,7 +46,14 @@ conversion:
       2: section
       3: subsection
     fallback_command: subsubsection
+    environments:
+      Abstract: abstract
+    emit_first: false
 ```
+
+A mapped heading opens its environment without emitting a section command. The
+environment closes before the next heading, before a passthrough code block, or at
+the end of the document.
 
 ---
 
@@ -111,6 +120,26 @@ conversion:
   links:
     external_link_template: "\\href{url}{text}"
     internal_ref_template: "\\ref{{{label}}}"
+```
+
+---
+
+## `cross_references`
+
+Direct target tokens can produce LaTeX cross-references when their prefixes are
+declared. The full target, including its prefix, fills the template field
+`{label}`.
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `prefixes` | `list[str]` | `[]` | Accepted target prefixes, without the leading `@` or trailing `:`. |
+| `template` | `str` | `"\\ref{{{label}}}"` | LaTeX template for one target. |
+
+```yaml
+conversion:
+  cross_references:
+    prefixes: [eq, fig, sec, tab]
+    template: "\\ref{{{label}}}"
 ```
 
 ---
@@ -198,6 +227,7 @@ Controls fenced code block rendering.
 | --- | ---- | ------- | ----------- |
 | `environment` | `str` | `"lstlisting"` | LaTeX environment wrapping code blocks. |
 | `options_template` | `str \| null` | `null` | Optional template for environment options. `{language}` is replaced with the fence language tag. |
+| `passthrough_languages` | `list[str]` | `[]` | Fence languages whose contents are emitted without an environment wrapper. |
 
 Alias: `code-blocks` is accepted as an alternative key name for `code_blocks`.
 
@@ -206,6 +236,7 @@ conversion:
   code_blocks:
     environment: lstlisting
     options_template: "language={language}"
+    passthrough_languages: [latex]
 ```
 
 ---
@@ -289,6 +320,7 @@ Controls math block rendering.
 | Key | Type | Default | Description |
 | --- | ---- | ------- | ----------- |
 | `block_style` | `str` | `"dollars"` | Display-math delimiter style: `"dollars"` (`$$...$$`) or `"brackets"` (`\[...\]`). |
+| `label_template` | `str` | `"\\label{{{label}}}"` | LaTeX template used when a closing display delimiter carries `{#label}`. |
 
 ```yaml
 conversion:
