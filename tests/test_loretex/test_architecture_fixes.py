@@ -4,7 +4,13 @@ import pytest
 
 from loretex.api import convert_spec
 from loretex.config.exceptions import SpecValidationError
-from loretex.conversion import ConversionConfig, InvalidCodeFenceError, MarkdownParser, TransformRegistry
+from loretex.conversion import (
+    ConversionConfig,
+    InvalidCodeFenceError,
+    MarkdownParser,
+    MarkdownToLaTeXConverter,
+    TransformRegistry,
+)
 
 
 def test_conversion_config_rejects_unknown_keys() -> None:
