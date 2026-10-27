@@ -108,6 +108,8 @@ class MathBlock(Node):
 
     content: str
     label: str | None = None
+    paragraph_break_before: bool = True
+    paragraph_break_after: bool = True
 
     def accept(self, visitor: NodeVisitor) -> str:
         return visitor.visit_math_block(self)

@@ -187,6 +187,9 @@ class MarkdownParser:
     def _parse_math_block(self, lines: list[str], start_idx: int) -> tuple[MathBlock, int]:
         """Parse block math delimited by $$ or \\[."""
         start_line = self._normalized_line(lines[start_idx]).strip()
+        paragraph_break_before = start_idx > 0 and self._is_blank(
+            self._normalized_line(lines[start_idx - 1])
+        )
         if start_line in {"$$", "\\["}:
             end_delimiter = "$$" if start_line == "$$" else "\\]"
             content_lines: list[str] = []
@@ -200,6 +203,9 @@ class MarkdownParser:
                         MathBlock(
                             content="\n".join(content_lines),
                             label=end_match.group("label"),
+                            paragraph_break_before=paragraph_break_before,
+                            paragraph_break_after=i < len(lines)
+                            and self._is_blank(self._normalized_line(lines[i])),
                         ),
                         i - start_idx,
                     )
@@ -209,13 +215,28 @@ class MarkdownParser:
 
         if start_line.startswith("$$") and start_line.endswith("$$") and len(start_line) > 4:
             content = start_line[2:-2].strip()
-            return MathBlock(content=content), 1
+            return MathBlock(
+                content=content,
+                paragraph_break_before=paragraph_break_before,
+                paragraph_break_after=start_idx + 1 < len(lines)
+                and self._is_blank(self._normalized_line(lines[start_idx + 1])),
+            ), 1
 
         if start_line.startswith("\\[") and start_line.endswith("\\]") and len(start_line) > 4:
             content = start_line[2:-2].strip()
-            return MathBlock(content=content), 1
+            return MathBlock(
+                content=content,
+                paragraph_break_before=paragraph_break_before,
+                paragraph_break_after=start_idx + 1 < len(lines)
+                and self._is_blank(self._normalized_line(lines[start_idx + 1])),
+            ), 1
 
-        return MathBlock(content=start_line), 1
+        return MathBlock(
+            content=start_line,
+            paragraph_break_before=paragraph_break_before,
+            paragraph_break_after=start_idx + 1 < len(lines)
+            and self._is_blank(self._normalized_line(lines[start_idx + 1])),
+        ), 1
 
     def _parse_callout(self, lines: list[str], start_idx: int) -> tuple[Callout, int]:
         """Parse callout block."""

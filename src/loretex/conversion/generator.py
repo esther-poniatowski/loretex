@@ -16,6 +16,7 @@ from .nodes import (
     List,
     ListItem,
     MathBlock,
+    Node,
     NodeVisitor,
     Paragraph,
     Section,
@@ -36,7 +37,7 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_document(self, node: Document) -> str:
         """Generate LaTeX for the full document."""
-        blocks: list[str] = []
+        blocks: list[tuple[str, Node | None]] = []
         active_environment: str | None = None
         first_heading_seen = False
 
@@ -46,7 +47,7 @@ class LaTeXGenerator(NodeVisitor):
                 and self._config.code_blocks.is_passthrough(child.language)
             )
             if active_environment and closes_environment:
-                blocks.append(f"\\end{{{active_environment}}}")
+                blocks.append((f"\\end{{{active_environment}}}", None))
                 active_environment = None
 
             if isinstance(child, Section):
@@ -54,7 +55,7 @@ class LaTeXGenerator(NodeVisitor):
                 first_heading_seen = True
                 environment = self._config.headings.environments.get(child.title)
                 if environment:
-                    blocks.append(f"\\begin{{{environment}}}")
+                    blocks.append((f"\\begin{{{environment}}}", None))
                     active_environment = environment
                     continue
                 if is_first and not self._config.headings.emit_first:
@@ -62,11 +63,50 @@ class LaTeXGenerator(NodeVisitor):
 
             block = child.accept(self)
             if block.strip() != "":
-                blocks.append(block)
+                blocks.append((block, child))
 
         if active_environment:
-            blocks.append(f"\\end{{{active_environment}}}")
-        return "\n\n".join(blocks)
+            blocks.append((f"\\end{{{active_environment}}}", None))
+        return self._join_blocks(blocks)
+
+    @staticmethod
+    def _join_blocks(
+        blocks: list[tuple[str, Node | None]],
+        default_separator: str = "\n\n",
+    ) -> str:
+        """Join rendered blocks while preserving display-math paragraph boundaries."""
+        if not blocks:
+            return ""
+
+        output = blocks[0][0]
+        for (_, previous_node), (text, current_node) in zip(blocks, blocks[1:]):
+            paragraph_boundary: bool | None = None
+            if isinstance(current_node, MathBlock):
+                paragraph_boundary = current_node.paragraph_break_before
+            if isinstance(previous_node, MathBlock):
+                previous_boundary = previous_node.paragraph_break_after
+                paragraph_boundary = (
+                    previous_boundary
+                    if paragraph_boundary is None
+                    else paragraph_boundary or previous_boundary
+                )
+            if paragraph_boundary is True:
+                separator = "\n\n"
+            elif paragraph_boundary is False:
+                separator = "\n"
+            else:
+                separator = default_separator
+            output += separator + text
+        return output
+
+    def _render_blocks(self, children: list[Node]) -> list[tuple[str, Node]]:
+        """Render child nodes while retaining the nodes that govern their boundaries."""
+        blocks: list[tuple[str, Node]] = []
+        for child in children:
+            block = child.accept(self)
+            if block.strip() != "":
+                blocks.append((block, child))
+        return blocks
 
     def render_inline(self, text: str) -> str:
         """Render inline Markdown under the generator's effective configuration."""
@@ -100,39 +140,14 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_list_item(self, node: ListItem) -> str:
         """Convert list item to LaTeX \\item."""
-        segments: list[tuple[str, str]] = []
-        text_parts: list[str] = []
-
-        for child in node.content:
-            if isinstance(child, Paragraph):
-                text_parts.append(self._inline.convert(child.content))
-                continue
-            if text_parts:
-                segments.append(("text", "\n".join(text_parts).strip()))
-                text_parts = []
-            segments.append(("block", child.accept(self)))
-
-        if text_parts:
-            segments.append(("text", "\n".join(text_parts).strip()))
-
-        if not segments:
+        blocks = self._render_blocks(node.content)
+        if not blocks:
             return "\\item"
 
-        lines: list[str] = []
-        first_kind, first_value = segments[0]
-        if first_kind == "text":
-            if first_value:
-                lines.append(f"\\item {first_value}")
-            else:
-                lines.append("\\item")
-        else:
-            lines.append("\\item")
-            lines.append(first_value)
-
-        for _kind, value in segments[1:]:
-            lines.append(value)
-
-        return "\n".join(lines)
+        body = self._join_blocks(blocks, default_separator="\n")
+        if isinstance(blocks[0][1], Paragraph):
+            return f"\\item {body}"
+        return f"\\item\n{body}"
 
     def visit_code_block(self, node: CodeBlock) -> str:
         """Convert fenced code block to configured environment."""
@@ -152,8 +167,7 @@ class LaTeXGenerator(NodeVisitor):
 
     def visit_callout(self, node: Callout) -> str:
         """Convert callout to custom LaTeX environment."""
-        body_blocks = [child.accept(self) for child in node.children]
-        body = "\n\n".join(block for block in body_blocks if block.strip() != "")
+        body = self._join_blocks(self._render_blocks(node.children))
         environment = self._config.callouts.resolve_environment(node.callout_type)
         title = self._inline.convert(node.title) if node.title else None
         if title and self._config.callouts.title_template is not None:

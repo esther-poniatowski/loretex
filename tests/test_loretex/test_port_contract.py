@@ -16,6 +16,7 @@ from loretex.conversion import (
     ConversionConfig,
     ConversionError,
     InvalidMathBlockError,
+    MarkdownToLaTeXConverter,
 )
 
 
@@ -134,6 +135,45 @@ def test_later_conversion_failure_preserves_previous_outputs(tmp_path: Path) -> 
 
     assert good_output.read_text(encoding="utf-8") == "accepted good"
     assert bad_output.read_text(encoding="utf-8") == "accepted bad"
+
+
+def test_display_math_preserves_source_paragraph_boundaries() -> None:
+    converter = MarkdownToLaTeXConverter()
+
+    continuous = converter.convert_string("Before:\n$$\nx = 1\n$$\nAfter.")
+    separated = converter.convert_string("Before.\n\n$$\nx = 1\n$$\n\nAfter.")
+
+    assert "Before:\n$$x = 1$$\nAfter." in continuous
+    assert "Before.\n\n$$x = 1$$\n\nAfter." in separated
+
+
+@pytest.mark.parametrize(
+    ("continuous_source", "separated_source", "prefix"),
+    [
+        (
+            "> [!note]\n> Before:\n> $$\n> x = 1\n> $$\n> After.",
+            "> [!note]\n> Before.\n>\n> $$\n> x = 1\n> $$\n>\n> After.",
+            "\\begin{notebox}\n",
+        ),
+        (
+            "- Before:\n  $$\n  x = 1\n  $$\n  After.",
+            "- Before.\n\n  $$\n  x = 1\n  $$\n\n  After.",
+            "\\item ",
+        ),
+    ],
+)
+def test_nested_display_math_preserves_source_paragraph_boundaries(
+    continuous_source: str,
+    separated_source: str,
+    prefix: str,
+) -> None:
+    converter = MarkdownToLaTeXConverter()
+
+    continuous = converter.convert_string(continuous_source)
+    separated = converter.convert_string(separated_source)
+
+    assert f"{prefix}Before:\n$$x = 1$$\nAfter." in continuous
+    assert f"{prefix}Before.\n\n$$x = 1$$\n\nAfter." in separated
 
 
 def test_title_rendering_failure_preserves_previous_outputs(tmp_path: Path) -> None:
