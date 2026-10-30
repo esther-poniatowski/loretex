@@ -6,7 +6,7 @@ Loretex reads conversion rules from the `conversion` block of a YAML spec file.
 Defaults are defined in the Python dataclass `ConversionConfig`
 (`src/loretex/conversion/config.py`). Spec-level values override those defaults.
 
-The `conversion` block contains 16 sub-sections, each controlling one aspect of the
+The `conversion` block contains 17 sub-sections, each controlling one aspect of the
 Markdown-to-LaTeX pipeline. All sub-sections and keys are optional; omitted keys
 fall back to built-in defaults.
 
@@ -366,6 +366,30 @@ Controls Obsidian-style wiki-link conversion.
 ```markdown
 See [[My Note]] or [[My Note|alias]].
 ```
+
+---
+
+## `substitutions`
+
+Lists regular-expression substitutions applied, in order, to the converted LaTeX of
+each document. Each substitution reads the output of the previous one, so a later
+pattern can rely on an earlier rewrite. The substitutions cover a convention of the
+source that no other rule expresses, such as a run-in label or a citation syntax.
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `pattern` | `str` | Required | Python regular expression, compiled when the configuration is read. Inline flags such as `(?m)` set its mode. |
+| `replacement` | `str` | Required | Replacement string, in which `\1` or `\g<name>` refers to a group of the pattern. |
+
+```yaml
+conversion:
+  substitutions:
+    - pattern: '(?m)^\\textbf\{(.+?)\.\}\s*'
+      replacement: '\\lead{\1} '
+```
+
+A chapter that declares `substitutions` replaces the global list, since lists are not
+merged. An invalid pattern stops the conversion before any file is written.
 
 ---
 

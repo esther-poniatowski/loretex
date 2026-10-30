@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Mapping
 
 from .config import ConversionConfig
@@ -92,10 +93,10 @@ class MarkdownToLaTeXConverter:
             if first_section is not None
             else None
         )
-        return ConversionResult(
-            latex=ast.accept(generator),
-            first_heading=first_heading,
-        )
+        latex = ast.accept(generator)
+        for substitution in config.substitutions:
+            latex = re.sub(substitution.pattern, substitution.replacement, latex)
+        return ConversionResult(latex=latex, first_heading=first_heading)
 
 
 def convert_string(

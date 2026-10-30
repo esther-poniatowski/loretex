@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
 from pathlib import Path
+import re
 from typing import Any, Mapping
 import warnings
 
@@ -325,6 +326,44 @@ class WikiLinkConfig:
 
 
 @dataclass(frozen=True)
+class Substitution:
+    """Regular-expression substitution applied to the converted LaTeX of a document."""
+
+    pattern: str
+    replacement: str
+
+
+def _coerce_substitutions(value: Any) -> tuple[Substitution, ...]:
+    """Parse the ordered substitutions, and reject a malformed entry or an invalid pattern."""
+    if not value:
+        return ()
+    if not isinstance(value, (list, tuple)):
+        raise ValueError("conversion.substitutions must be a list.")
+    substitutions = []
+    for index, entry in enumerate(value, start=1):
+        if not isinstance(entry, Mapping):
+            raise ValueError(f"conversion.substitutions entry {index} must be a mapping.")
+        _ensure_known_keys(
+            entry,
+            allowed={"pattern", "replacement"},
+            context=f"substitutions entry {index}",
+        )
+        pattern, replacement = entry.get("pattern"), entry.get("replacement")
+        if not isinstance(pattern, str) or not isinstance(replacement, str):
+            raise ValueError(
+                f"conversion.substitutions entry {index} needs string pattern and replacement."
+            )
+        try:
+            re.compile(pattern)
+        except re.error as error:
+            raise ValueError(
+                f"conversion.substitutions entry {index} has an invalid pattern: {error}"
+            ) from error
+        substitutions.append(Substitution(pattern=pattern, replacement=replacement))
+    return tuple(substitutions)
+
+
+@dataclass(frozen=True)
 class ConversionConfig:
     """Aggregate configuration for Markdown-to-LaTeX conversion."""
 
@@ -344,6 +383,7 @@ class ConversionConfig:
     math: MathConfig = field(default_factory=MathConfig)
     labels: LabelConfig = field(default_factory=LabelConfig)
     wiki_links: WikiLinkConfig = field(default_factory=WikiLinkConfig)
+    substitutions: tuple[Substitution, ...] = ()
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any] | None) -> "ConversionConfig":
@@ -619,6 +659,7 @@ class ConversionConfig:
                     wiki_links_data.get("label_separator", "-")
                 ),
             ),
+            substitutions=_coerce_substitutions(data.get("substitutions")),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -712,6 +753,10 @@ class ConversionConfig:
                 "alias_template": self.wiki_links.alias_template,
                 "label_separator": self.wiki_links.label_separator,
             },
+            "substitutions": [
+                {"pattern": item.pattern, "replacement": item.replacement}
+                for item in self.substitutions
+            ],
         }
 
     def with_overrides(self, overrides: Mapping[str, Any] | None) -> "ConversionConfig":
