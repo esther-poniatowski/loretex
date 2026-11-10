@@ -57,6 +57,42 @@ def test_cli_convert_file_output(tmp_path):
     input_file = tmp_path / "input.md"
     output_file = tmp_path / "output.tex"
     input_file.write_text("# Hello\n\nWorld", encoding="utf-8")
+    result = runner.invoke(app, ["convert-file", str(input_file), "--output", str(output_file)])
+    assert result.exit_code == 0
+    assert output_file.read_text(encoding="utf-8").startswith(r"\section{Hello}")
+    assert "deprecated" not in result.stderr
+
+
+def test_cli_convert_file_deprecated_out_alias(tmp_path):
+    """
+    Test that the former `--out` name still writes the file and warns on stderr.
+    """
+    input_file = tmp_path / "input.md"
+    output_file = tmp_path / "output.tex"
+    input_file.write_text("# Hello\n\nWorld", encoding="utf-8")
     result = runner.invoke(app, ["convert-file", str(input_file), "--out", str(output_file)])
     assert result.exit_code == 0
     assert output_file.read_text(encoding="utf-8").startswith(r"\section{Hello}")
+    assert "--out is deprecated; use --output" in result.stderr
+
+
+def test_cli_convert_file_rejects_both_output_names(tmp_path):
+    """
+    Test that giving both `--output` and the deprecated `--out` is a usage error.
+    """
+    input_file = tmp_path / "input.md"
+    input_file.write_text("# Hello", encoding="utf-8")
+    result = runner.invoke(
+        app, ["convert-file", str(input_file), "--output", "a.tex", "--out", "b.tex"]
+    )
+    assert result.exit_code == 2
+
+
+def test_cli_convert_file_help_hides_out_alias():
+    """
+    Test that the help lists `--output` and hides the deprecated `--out`.
+    """
+    result = runner.invoke(app, ["convert-file", "--help"])
+    assert result.exit_code == 0
+    assert "--output" in result.stdout
+    assert "--out " not in result.stdout

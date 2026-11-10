@@ -9,7 +9,7 @@ loretex convert-file notes.md
 ```
 
 ```bash
-loretex convert-file notes.md --out notes.tex
+loretex convert-file notes.md --output notes.tex
 ```
 
 ```python

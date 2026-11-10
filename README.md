@@ -75,7 +75,7 @@ adjustments in the final output.
 Convert a single Markdown file:
 
 ```sh
-loretex convert-file notes.md --out notes.tex
+loretex convert-file notes.md --output notes.tex
 ```
 
 Convert multiple chapters from a YAML spec:

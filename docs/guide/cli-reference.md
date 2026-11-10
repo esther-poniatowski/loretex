@@ -19,13 +19,13 @@ Convert a single Markdown file to LaTeX.
 
 ```sh
 loretex convert-file notes.md
-loretex convert-file notes.md --out notes.tex
+loretex convert-file notes.md --output notes.tex
 loretex convert-file notes.md --config rules.yaml --anchor 2
 ```
 
 | Option | Short | Description | Default |
 | ------ | ----- | ----------- | ------- |
-| `--out PATH` | `-o` | Write output to a file instead of stdout. | stdout |
+| `--output PATH` | `-o` | Write output to a file instead of stdout. | stdout |
 | `--config PATH` | `-c` | YAML file with conversion rules (same schema as the `conversion` block in a spec). | none |
 | `--anchor INT` | `-a` | Markdown heading level mapped to `\section{}`. Ignored when the config file already sets `headings.anchor_level`. | `1` |
 

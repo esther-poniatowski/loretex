@@ -19,7 +19,7 @@ loretex convert-file notes.md
 Write the result to a file:
 
 ```sh
-loretex convert-file notes.md --out notes.tex
+loretex convert-file notes.md --output notes.tex
 ```
 
 Pass a YAML config and set the anchor level:

@@ -94,7 +94,7 @@ def convert(
 def convert_file(
     input_path: Path = typer.Argument(..., help="Markdown file to convert."),
     output_path: Path | None = typer.Option(
-        None, "--out", "-o", help="Optional output .tex path. Defaults to stdout."
+        None, "--output", "-o", help="Optional output .tex path. Defaults to stdout."
     ),
     config_path: Path | None = typer.Option(
         None, "--config", "-c", help="Optional YAML conversion config."
@@ -102,10 +102,20 @@ def convert_file(
     anchor_level: int = typer.Option(
         1, "--anchor", "-a", help="Markdown heading mapped to \\section{}."
     ),
+    deprecated_output_path: Path | None = typer.Option(
+        None, "--out", hidden=True, help="Deprecated name of --output, kept for one release."
+    ),
 ) -> None:
     """
     Convert a single Markdown file to LaTeX and write to stdout or a file.
     """
+    if deprecated_output_path is not None:
+        if output_path is not None:
+            raise typer.BadParameter(
+                "give --output only; --out is its deprecated name", param_hint="--out"
+            )
+        typer.echo("loretex: warning: --out is deprecated; use --output", err=True)
+        output_path = deprecated_output_path
     config_data = load_yaml_spec(config_path) if config_path else {}
     if config_data is None:
         config_data = {}
