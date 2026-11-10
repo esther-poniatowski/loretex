@@ -11,6 +11,7 @@ from .exceptions import (
     InvalidListError,
     InvalidMathBlockError,
     LoretexError,
+    OverwriteError,
     ParsingError,
 )
 from .generator import LaTeXGenerator
@@ -69,6 +70,7 @@ __all__ = [
     "MathBlock",
     "Node",
     "NodeVisitor",
+    "OverwriteError",
     "Paragraph",
     "ParsingError",
     "Section",

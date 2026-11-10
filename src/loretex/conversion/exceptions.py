@@ -32,6 +32,16 @@ class ConversionError(LoretexError):
     """Raised when conversion fails."""
 
 
+class OverwriteError(LoretexError):
+    """Raised when an output would overwrite an input of the conversion, without ``--force``.
+
+    An input, such as the Markdown source, the spec, the template or a conversion config, is not
+    derived by loretex and cannot be regenerated, unlike a generated ``.tex`` file.
+    """
+
+    exit_code = 2
+
+
 class ParsingError(ConversionError):
     """Raised when parsing encounters invalid Markdown syntax.
 

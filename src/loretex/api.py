@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import stat
 import tempfile
-from typing import Mapping
+from typing import Iterable, Mapping
 
 from loretex.config.params import (
     DEFAULT_CALLOUT_BODY_FONT,
@@ -19,7 +19,12 @@ from loretex.config.params import (
     DEFAULT_DOCUMENT_FONT,
     SpecParams,
 )
-from loretex.conversion import ConversionConfig, ConversionError, MarkdownToLaTeXConverter
+from loretex.conversion import (
+    ConversionConfig,
+    ConversionError,
+    MarkdownToLaTeXConverter,
+    OverwriteError,
+)
 from loretex.conversion.config import has_anchor_override
 from loretex.pipeline import AssemblyPlan, render_assembly
 from loretex.utils.io import load_yaml_spec
@@ -47,16 +52,48 @@ def convert_string(
     return converter.convert_string(source, overrides)
 
 
+def check_overwrites(outputs: Iterable[Path], inputs: Iterable[Path], force: bool = False) -> None:
+    """
+    Refuse an output that would overwrite an input of the conversion, unless ``force`` is set.
+
+    A generated ``.tex`` file is derived and may be overwritten freely. An input, such as the
+    Markdown source, the spec, the template or a conversion config, cannot be regenerated.
+
+    Raises
+    ------
+    OverwriteError
+        If an output resolves to an input and ``force`` is ``False``; the message names the file.
+    """
+    if force:
+        return
+    protected = {path.resolve() for path in inputs}
+    for output in outputs:
+        if output.resolve() in protected:
+            raise OverwriteError(
+                f"refusing to overwrite the input {output}, which loretex does not generate; "
+                "pass --force to overwrite it"
+            )
+
+
 def convert_file(
     input_path: Path,
     output_path: Path | None = None,
     config: ConversionConfig | Mapping[str, object] | None = None,
     overrides: Mapping[str, object] | None = None,
     transforms: list | None = None,
+    *,
+    force: bool = False,
 ) -> str:
     """
     Convert a Markdown file to LaTeX. Returns the LaTeX string.
+
+    Raises
+    ------
+    OverwriteError
+        If ``output_path`` is ``input_path`` and ``force`` is ``False``.
     """
+    if output_path is not None:
+        check_overwrites([output_path], [input_path], force)
     markdown_text = input_path.read_text(encoding="utf-8")
     latex_text = convert_string(
         markdown_text,
@@ -93,19 +130,30 @@ class PlannedOutput:
     text: str
 
 
-def convert_spec(spec_input: Path | dict) -> SpecResult:
+def convert_spec(spec_input: Path | dict, *, force: bool = False) -> SpecResult:
     """
     Convert chapters from a YAML specification file (or pre-loaded dict).
+
+    The spec is a job file: the paths written in it are relative to its own folder.
 
     Parameters
     ----------
     spec_input : Path | dict
         Either the path to a YAML spec file, or an already-loaded spec dict.
+    force : bool
+        Allow an output to overwrite an input of the run: a chapter source, the template or the
+        spec itself.
 
     Returns
     -------
     SpecResult
         Paths of generated chapter files and, optionally, the assembled main file.
+
+    Raises
+    ------
+    OverwriteError
+        If an output resolves to an input of the run and ``force`` is ``False``; nothing is
+        written.
     """
     if isinstance(spec_input, dict):
         spec = spec_input
@@ -118,6 +166,12 @@ def convert_spec(spec_input: Path | dict) -> SpecResult:
     planned, chapter_outputs, auxiliary_outputs = _convert_chapters(params)
     main_output = _plan_main(params, chapter_outputs, planned)
     _validate_unique_outputs(planned)
+    inputs = [chapter.md_path for chapter in params.chapters]
+    if params.template_path is not None:
+        inputs.append(params.template_path)
+    if not isinstance(spec_input, dict):
+        inputs.append(Path(spec_input))
+    check_overwrites((output.path for output in planned), inputs, force)
     _write_outputs(planned)
 
     return SpecResult(

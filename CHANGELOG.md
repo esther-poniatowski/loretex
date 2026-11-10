@@ -6,13 +6,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+The command line follows the workspace
+[command-line conventions](https://github.com/esther-poniatowski/keystone/blob/main/docs/internals/cli-conventions.md).
+
+### Added
+- `loretex convert --force` and `loretex convert-file --force` allow an output to overwrite an
+  input of the conversion. Without `--force`, an output that names the Markdown source, the spec,
+  the template or the `--config` file stops the command with status 2 and an error naming the file,
+  before any file is written.
+
 ### Changed
 - `loretex convert-file` names its output file `--output` (short form `-o`), the name that the
-  workspace command-line conventions reserve for one output file.
-
-### Deprecated
-- `loretex convert-file --out` remains accepted for one release as a hidden alias of `--output`,
-  and prints a warning naming `--output`. The following release removes it.
+  conventions reserve for one output file. The former name `--out` is no longer accepted.
+- An absent `--spec`, `--config` or input file, an invalid spec and an invalid conversion config
+  stop the command with status 2 and a message, instead of a traceback.
 
 ## [0.1.0] - 2026-02-03
 

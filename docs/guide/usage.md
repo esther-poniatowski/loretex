@@ -45,6 +45,8 @@ chapters:
 loretex convert --spec spec.yml
 ```
 
+The paths written in a spec are relative to the folder of the spec, not to the current folder.
+
 ### Spec-Level Keys
 
 | Key | Type | Default | Description |
