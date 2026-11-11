@@ -15,11 +15,11 @@ convert_file(input_path: Path, output_path: Path | None, config_path: Path | Non
     Convert a single Markdown file to LaTeX.
 
 Every path given on the command line is read from the current folder. The spec of ``convert`` is a
-job file, not a settings file: the paths written in it are relative to its own folder, so that a
-document keeps its spec beside its Markdown. Loretex has no settings file, hence no root: the
-conversion rules of ``convert-file`` come from ``--config`` only. An output never overwrites an
-input of the conversion without ``--force``. The exit status is 2 on a usage or spec error, and 1
-when the conversion of the Markdown fails.
+job file, not a configuration file: the paths written in it are relative to its own folder, so that
+a document keeps its spec beside its Markdown. Loretex searches for no configuration file, hence has
+no root: the conversion rules of ``convert-file`` come from ``--config`` only. An output never
+overwrites an input of the conversion without ``--force``. The exit status is 2 on a usage or spec
+error, and 1 when the conversion of the Markdown fails.
 
 See Also
 --------
